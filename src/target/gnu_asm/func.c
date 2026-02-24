@@ -315,7 +315,10 @@ save_regs_before_call(struct func_call_context *ctx)
 
 	assert(ctx);
 	assert(ctx->fn);
-	assert(ctx->fn->args);
+	if (!ctx->fn->argc && !ctx->fn->args)
+		return;
+	if (!ctx->argc && !ctx->args)
+		return;
 	f = ctx->fn->data;
 	assert(f);
 
