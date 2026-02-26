@@ -17,7 +17,7 @@
 #include "../../str.h"
 
 void
-destory_value(struct mcb_value *container)
+destroy_value(struct mcb_value *container)
 {
 	struct gnu_asm_value *val;
 	if (!container)
@@ -25,7 +25,7 @@ destory_value(struct mcb_value *container)
 
 	if (container->kind == MCB_STRUCT_VALUE) {
 		assert(container->type == MCB_STRUCT);
-		destory_struct_value(container);
+		destroy_struct_value(container);
 		goto end;
 	}
 

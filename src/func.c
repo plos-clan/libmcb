@@ -56,24 +56,24 @@ err_null_name:
 }
 
 void
-mcb_destory_func(struct mcb_func *fn)
+mcb_destroy_func(struct mcb_func *fn)
 {
 	if (!fn)
 		return;
 	for (int i = 0; i < fn->argc; i++)
-		mcb_destory_func_arg(fn->args[i]);
+		mcb_destroy_func_arg(fn->args[i]);
 	free(fn->args);
 
 	for (size_t i = 0; i < fn->inst_arr_count; i++)
-		mcb_destory_inst(fn->inst_arr[i]);
+		mcb_destroy_inst(fn->inst_arr[i]);
 	free(fn->inst_arr);
 
 	for (size_t i = 0; i < fn->label_arr_count; i++)
-		mcb_destory_label(fn->label_arr[i]);
+		mcb_destroy_label(fn->label_arr[i]);
 	free(fn->label_arr);
 
 	for (size_t i = 0; i < fn->value_arr_count; i++)
-		mcb_destory_value(fn->value_arr[i]);
+		mcb_destroy_value(fn->value_arr[i]);
 	free(fn->value_arr);
 
 	free(fn->name);
@@ -81,7 +81,7 @@ mcb_destory_func(struct mcb_func *fn)
 }
 
 void
-mcb_destory_func_arg(struct mcb_func_arg *arg)
+mcb_destroy_func_arg(struct mcb_func_arg *arg)
 {
 	if (!arg)
 		return;

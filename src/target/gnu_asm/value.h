@@ -28,7 +28,7 @@ struct gnu_asm_value {
 };
 
 #ifdef LIBMCB_STRIP
-#define destory_value           mcb__gnu_asm_destory_value
+#define destroy_value           mcb__gnu_asm_destroy_value
 #define drop_value              mcb__gnu_asm_drop_value
 #define map_bytes_to_value_kind mcb__gnu_asm_map_bytes_to_value_kind
 #define map_type_to_value_kind  mcb__gnu_asm_map_type_to_value_kind
@@ -39,7 +39,7 @@ struct gnu_asm_value {
 #define str_from_imm            mcb__gnu_asm_str_from_imm
 #endif
 
-void mcb__gnu_asm_destory_value(struct mcb_value *container);
+void mcb__gnu_asm_destroy_value(struct mcb_value *container);
 void mcb__gnu_asm_drop_value(struct mcb_value *val, struct mcb_func *fn);
 enum GNU_ASM_VALUE_KIND mcb__gnu_asm_map_bytes_to_value_kind(
 		enum GNU_ASM_VALUE_KIND base,

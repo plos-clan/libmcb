@@ -48,12 +48,12 @@ mcb_target_gnu_asm(FILE *stream, struct mcb_context *ctx)
 	text_block_for_each(cur, gnu_asm_ctx.text.beg) {
 		if (cur->s.s)
 			fwrite(cur->s.s, sizeof(*cur->s.s), cur->s.len, stream);
-		destory_text_block(cur);
+		destroy_text_block(cur);
 	}
 	fflush(stream);
 
 	for (size_t i = 0; i < ctx->fn_arr_count; i++)
-		destory_func(ctx->fn_arr[i]);
+		destroy_func(ctx->fn_arr[i]);
 
 	str_free(&gnu_asm_ctx.buf);
 

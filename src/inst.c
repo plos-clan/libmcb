@@ -5,7 +5,7 @@
 #include "mcb/inst.h"
 
 void
-mcb_destory_inst(struct mcb_inst *inst)
+mcb_destroy_inst(struct mcb_inst *inst)
 {
 	if (!inst)
 		return;

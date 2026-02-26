@@ -36,7 +36,7 @@ err_free_l:
 }
 
 void
-mcb_destory_label(struct mcb_label *l)
+mcb_destroy_label(struct mcb_label *l)
 {
 	if (!l)
 		return;

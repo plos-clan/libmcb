@@ -17,6 +17,6 @@ int mcb_append_label(struct mcb_label *label, struct mcb_func *fn);
 
 struct mcb_label *mcb_define_label(const char *name);
 
-void mcb_destory_label(struct mcb_label *l);
+void mcb_destroy_label(struct mcb_label *l);
 
 #endif

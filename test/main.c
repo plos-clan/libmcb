@@ -64,6 +64,6 @@ main(void)
 
 	// fclose(fp);
 
-	mcb_destory_context(&ctx);
+	mcb_destroy_context(&ctx);
 	return 0;
 }

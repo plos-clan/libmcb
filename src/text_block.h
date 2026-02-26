@@ -30,7 +30,7 @@ struct text_block_root {
 #ifdef LIBMCB_STRIP
 #define append_text_block    mcb__append_text_block
 #define create_text_block    mcb__create_text_block
-#define destory_text_block   mcb__destory_text_block
+#define destroy_text_block   mcb__destroy_text_block
 #define insert_text_block    mcb__insert_text_block
 #define init_text_block_root mcb__init_text_block_root
 #define text_block_from_str  mcb__text_block_from_str
@@ -46,7 +46,7 @@ void mcb__append_text_block(struct text_block_root *root,
  */
 struct text_block *mcb__create_text_block(size_t siz);
 
-void mcb__destory_text_block(struct text_block *blk);
+void mcb__destroy_text_block(struct text_block *blk);
 
 /**
  * Insert `blk` between `b0` and `b1`.

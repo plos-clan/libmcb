@@ -37,7 +37,7 @@ create_text_block(size_t siz)
 }
 
 void
-destory_text_block(struct text_block *blk)
+destroy_text_block(struct text_block *blk)
 {
 	if (!blk)
 		return;

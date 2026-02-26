@@ -55,6 +55,6 @@ struct mcb_inst {
 	} inner;
 };
 
-void mcb_destory_inst(struct mcb_inst *inst);
+void mcb_destroy_inst(struct mcb_inst *inst);
 
 #endif

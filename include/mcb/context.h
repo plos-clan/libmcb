@@ -15,6 +15,6 @@ struct mcb_context {
 };
 
 int mcb_define_context(struct mcb_context *ctx);
-void mcb_destory_context(struct mcb_context *ctx);
+void mcb_destroy_context(struct mcb_context *ctx);
 
 #endif

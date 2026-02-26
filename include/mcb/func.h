@@ -53,7 +53,7 @@ struct mcb_func_arg *mcb_define_func_arg(
 		enum MCB_TYPE type,
 		struct mcb_func *fn);
 
-void mcb_destory_func(struct mcb_func *fn);
-void mcb_destory_func_arg(struct mcb_func_arg *arg);
+void mcb_destroy_func(struct mcb_func *fn);
+void mcb_destroy_func_arg(struct mcb_func_arg *arg);
 
 #endif

@@ -9,7 +9,7 @@
 #include "value.h"
 
 void
-destory_struct_value(struct mcb_value *container)
+destroy_struct_value(struct mcb_value *container)
 {
 	struct gnu_asm_struct_value *struct_value;
 	if (!container)
@@ -24,7 +24,7 @@ destory_struct_value(struct mcb_value *container)
 			free(struct_value->values[i]->inner.mem);
 			free(struct_value->values[i]);
 		}
-		destory_value(container->inner.structure.values[i]);
+		destroy_value(container->inner.structure.values[i]);
 	}
 	free(struct_value->values);
 

@@ -67,6 +67,6 @@ struct mcb_value *mcb_define_value_from_func_arg(
 		struct mcb_func_arg *func_arg,
 		struct mcb_func *fn);
 
-void mcb_destory_value(struct mcb_value *val);
+void mcb_destroy_value(struct mcb_value *val);
 
 #endif
