@@ -411,6 +411,7 @@ build_call_inst(struct mcb_inst *inst_outer,
 
 	for (int i = 0; i < call_ctx.argc; i++)
 		drop_arg(i, &call_ctx);
+	free(call_ctx.args);
 
 	return 0;
 }

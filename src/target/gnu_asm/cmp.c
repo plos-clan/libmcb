@@ -110,6 +110,9 @@ build_cmp_inst(struct mcb_inst *inst_outer,
 	if (inst->rhs->scope_end == inst_outer)
 		drop_value(inst->rhs, fn);
 
+	str_free(&lhs_str);
+	str_free(&rhs_str);
+
 	return 0;
 }
 
