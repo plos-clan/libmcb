@@ -82,16 +82,21 @@ store_to_value(struct gnu_asm_value *val,
 {
 	struct text_block *blk;
 	struct mcb_store_inst *inst = &inst_outer->inner.store;
-	struct gnu_asm_value src;
+	struct gnu_asm_value src, *src_ptr;
 	assert(val);
 	if (inst->container->scope_end == inst_outer)
 		return 0;
 
-	src.kind = remap_value_kind(I8_IMM_VALUE, val->kind);
-	src.inner.imm.i = inst->operand.i;
+	if (inst->kind == MCB_STORE_VALUE) {
+		src_ptr = inst->operand.value->data;
+	} else {
+		src.kind = remap_value_kind(I8_IMM_VALUE, val->kind);
+		src.inner.imm.i = inst->operand.i;
+		src_ptr = &src;
+	}
 
 	estr_clean(&ctx->buf);
-	if (gen_mov(&ctx->buf, val, &src))
+	if (gen_mov(&ctx->buf, val, src_ptr))
 		eabort("gen_mov()");
 	blk = text_block_from_str(&ctx->buf);
 	append_text_block(&ctx->text, blk);
@@ -134,6 +139,10 @@ build_store_inst(struct mcb_inst *inst_outer,
 	assert(inst->container);
 	switch (inst->container->kind) {
 	case MCB_NORMAL_VALUE:
+		if (inst->kind == MCB_STORE_VALUE) {
+			inst->container->data = inst->operand.value->data;
+			return 0;
+		}
 		return store_imm(inst);
 	case MCB_ARRAY_VALUE:
 		eabort("store to value of array directly");

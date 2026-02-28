@@ -22,6 +22,7 @@ mcb_inst_store_int(struct mcb_value *container,
 	inst = ecalloc(1, sizeof(*inst));
 	inst->kind = MCB_STORE_INST;
 	inst->inner.store.container = container;
+	inst->inner.store.kind = MCB_STORE_INT;
 	inst->inner.store.operand.i = data;
 	if (mcb_use_value(inst, container))
 		goto err_free_inst;
@@ -42,7 +43,31 @@ mcb_inst_store_uint(struct mcb_value *container,
 	inst = ecalloc(1, sizeof(*inst));
 	inst->kind = MCB_STORE_INST;
 	inst->inner.store.container = container;
+	inst->inner.store.kind = MCB_STORE_UINT;
 	inst->inner.store.operand.u = data;
+	if (mcb_use_value(inst, container))
+		goto err_free_inst;
+	if (mcb_append_inst(inst, fn))
+		goto err_free_inst;
+	return 0;
+err_free_inst:
+	free(inst);
+	return 1;
+}
+
+int
+mcb_inst_store_value(struct mcb_value *container,
+		struct mcb_value *data,
+		struct mcb_func *fn)
+{
+	struct mcb_inst *inst;
+	if (!container || !data || !fn)
+		ereturn(1, "!container || !data || !fn");
+	inst = ecalloc(1, sizeof(*inst));
+	inst->kind = MCB_STORE_INST;
+	inst->inner.store.container = container;
+	inst->inner.store.kind = MCB_STORE_VALUE;
+	inst->inner.store.operand.value = data;
 	if (mcb_use_value(inst, container))
 		goto err_free_inst;
 	if (mcb_append_inst(inst, fn))

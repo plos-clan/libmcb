@@ -7,9 +7,20 @@
 #include "mcb/func.h"
 #include "mcb/value.h"
 
+enum MCB_STORE_INST_KIND {
+	MCB_STORE_INT,
+	MCB_STORE_UINT,
+	MCB_STORE_VALUE
+};
+
 struct mcb_store_inst {
 	struct mcb_value *container;
-	union {int64_t i; uint64_t u;} operand;
+	enum MCB_STORE_INST_KIND kind;
+	union {
+		int64_t i;
+		uint64_t u;
+		struct mcb_value *value;
+	} operand;
 };
 
 int mcb_inst_store_int(struct mcb_value *container,
@@ -18,6 +29,10 @@ int mcb_inst_store_int(struct mcb_value *container,
 
 int mcb_inst_store_uint(struct mcb_value *container,
 		uint64_t data,
+		struct mcb_func *fn);
+
+int mcb_inst_store_value(struct mcb_value *container,
+		struct mcb_value *data,
 		struct mcb_func *fn);
 
 #endif
