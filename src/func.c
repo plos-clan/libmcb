@@ -15,7 +15,7 @@
 
 struct mcb_func *
 mcb_define_func(const char *name,
-		enum MCB_TYPE type,
+		const struct mcb_type *type,
 		enum MCB_FUNC_EXPORT_TYPE export_type,
 		struct mcb_context *ctx)
 {
@@ -35,24 +35,14 @@ err_null_name:
 	ereturn(NULL, "strdup(name)");
 }
 
-struct mcb_func_arg *
-mcb_define_func_arg(const char *name,
-		enum MCB_TYPE type,
-		struct mcb_func *fn)
+int
+mcb_append_func_arg(struct mcb_value *val, struct mcb_func *fn)
 {
-	struct mcb_func_arg *arg;
-	if (!name || !fn)
-		ereturn(NULL, "!name || !fn");
-	arg = ecalloc(1, sizeof(*arg));
-	arg->name = strdup(name);
-	if (!arg->name)
-		goto err_null_name;
-	arg->type = type;
-	darr_append(fn->args, fn->argc, arg);
-	return arg;
-err_null_name:
-	free(arg);
-	ereturn(NULL, "strdup(name)");
+	if (!val || !fn)
+		ereturn(1, "!val || !fn");
+	val->kind = MCB_FUNC_ARG_VALUE;
+	darr_append(fn->args, fn->argc, val);
+	return 0;
 }
 
 void
@@ -60,8 +50,6 @@ mcb_destroy_func(struct mcb_func *fn)
 {
 	if (!fn)
 		return;
-	for (int i = 0; i < fn->argc; i++)
-		mcb_destroy_func_arg(fn->args[i]);
 	free(fn->args);
 
 	for (size_t i = 0; i < fn->inst_arr_count; i++)
@@ -78,13 +66,4 @@ mcb_destroy_func(struct mcb_func *fn)
 
 	free(fn->name);
 	free(fn);
-}
-
-void
-mcb_destroy_func_arg(struct mcb_func_arg *arg)
-{
-	if (!arg)
-		return;
-	free(arg->name);
-	free(arg);
 }

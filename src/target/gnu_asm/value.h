@@ -20,6 +20,7 @@ struct gnu_asm_value {
 	const struct mcb_value *container;
 	enum GNU_ASM_VALUE_KIND kind;
 	union {
+		struct gnu_asm_data_obj *data;
 		union gnu_asm_imm_value imm;
 		struct gnu_asm_mem_obj *mem;
 		enum MCB_CMP_OPERATOR operator;
@@ -46,7 +47,7 @@ enum GNU_ASM_VALUE_KIND mcb__gnu_asm_map_bytes_to_value_kind(
 		int bytes);
 enum GNU_ASM_VALUE_KIND mcb__gnu_asm_map_type_to_value_kind(
 		enum GNU_ASM_VALUE_KIND base,
-		enum MCB_TYPE t);
+		const struct mcb_type *t);
 int mcb__gnu_asm_map_value_kind_to_bytes(enum GNU_ASM_VALUE_KIND kind);
 enum GNU_ASM_VALUE_KIND mcb__gnu_asm_remap_value_kind(
 		enum GNU_ASM_VALUE_KIND base,

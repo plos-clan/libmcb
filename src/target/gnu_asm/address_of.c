@@ -88,7 +88,7 @@ address_of_struct(
 	struct gnu_asm_value *val;
 
 	assert(struct_val && inst && fn && ctx);
-	assert(inst->val->kind == MCB_STRUCT_VALUE);
+	assert(inst->val->type->builtin == MCB_STRUCT);
 	val = struct_val->values[0];
 	assert(val);
 
@@ -162,7 +162,7 @@ build_address_of_inst(struct mcb_inst *inst_outer,
 		return 0;
 
 	assert(inst->val);
-	if (inst->val->kind == MCB_STRUCT_VALUE)
+	if (inst->val->type->builtin == MCB_STRUCT)
 		return address_of_struct(inst->val->data, inst, fn, ctx);
 
 	val = inst->val->data;

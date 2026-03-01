@@ -7,15 +7,4 @@
 #include "type.h"
 #include "value.h"
 
-struct mcb_value *mcb_define_array(
-		const char *name,
-		enum MCB_TYPE elem_type,
-		size_t size,
-		struct mcb_func *fn);
-
-struct mcb_value *mcb_get_value_from_array(
-		struct mcb_value *container,
-		size_t idx,
-		struct mcb_func *fn);
-
 #endif

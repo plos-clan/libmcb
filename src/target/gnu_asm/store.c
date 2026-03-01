@@ -9,6 +9,7 @@
 #include "mcb/value.h"
 
 #define LIBMCB_STRIP
+#include "data.h"
 #include "gen_mov.h"
 #include "gnu_asm.h"
 #include "inst.h"
@@ -19,6 +20,9 @@
 #include "../../err.h"
 #include "../../str.h"
 
+static int store_imm(struct mcb_store_inst *inst);
+static int store_normal_value(struct mcb_store_inst *inst, struct gnu_asm *ctx);
+static int store_string(struct mcb_store_inst *inst, struct gnu_asm *ctx);
 static int store_to_array_elem(
 		struct mcb_inst *inst_outer,
 		struct gnu_asm *ctx);
@@ -30,7 +34,55 @@ static int store_to_value(
 		struct mcb_inst *inst_outer,
 		struct gnu_asm *ctx);
 static int store_to_var(struct mcb_inst *inst_outer, struct gnu_asm *ctx);
-static int store_imm(struct mcb_store_inst *inst);
+
+int
+store_imm(struct mcb_store_inst *inst)
+{
+	struct gnu_asm_value *v = ecalloc(1, sizeof(*v));
+	v->container = inst->container;
+	v->kind = map_type_to_value_kind(
+			I8_IMM_VALUE,
+			inst->container->type);
+	if (v->kind == UNKOWN_VALUE)
+		eabort("map_type_to_value_kind()");
+	v->inner.imm.i = inst->operand.i;
+	inst->container->data = v;
+	return 0;
+}
+
+int
+store_normal_value(struct mcb_store_inst *inst, struct gnu_asm *ctx)
+{
+	assert(inst);
+	switch (inst->kind) {
+	case MCB_STORE_INT:
+	case MCB_STORE_UINT:
+		return store_imm(inst);
+	case MCB_STORE_STRING:
+		return store_string(inst, ctx);
+	case MCB_STORE_VALUE:
+		inst->container->data = inst->operand.value->data;
+		return 0;
+	}
+	return 0;
+}
+
+int
+store_string(struct mcb_store_inst *inst, struct gnu_asm *ctx)
+{
+	struct gnu_asm_value *v;
+	assert(inst);
+	v = ecalloc(1, sizeof(*v));
+	v->container = inst->container;
+	v->kind = map_type_to_value_kind(
+			I8_DATA_VALUE,
+			inst->container->type);
+	if (v->kind == UNKOWN_VALUE)
+		eabort("map_type_to_value_kind()");
+	v->inner.data = alloc_str_data(inst->operand.str.str, v, ctx);
+	inst->container->data = v;
+	return 0;
+}
 
 int
 store_to_array_elem(
@@ -60,7 +112,7 @@ store_to_struct_elem(
 		struct gnu_asm *ctx)
 {
 	struct mcb_store_inst *inst = &inst_outer->inner.store;
-	struct mcb_value_inner_struct_elem *struct_elem;
+	struct mcb_struct_elem_value *struct_elem;
 	struct gnu_asm_struct_value *struct_val;
 	struct gnu_asm_value *val;
 
@@ -114,21 +166,6 @@ store_to_var(struct mcb_inst *inst_outer, struct gnu_asm *ctx)
 }
 
 int
-store_imm(struct mcb_store_inst *inst)
-{
-	struct gnu_asm_value *v = ecalloc(1, sizeof(*v));
-	v->container = inst->container;
-	v->kind = map_type_to_value_kind(
-			I8_IMM_VALUE,
-			inst->container->type);
-	if (v->kind == UNKOWN_VALUE)
-		eabort("map_type_to_value_kind()");
-	v->inner.imm.i = inst->operand.i;
-	inst->container->data = v;
-	return 0;
-}
-
-int
 build_store_inst(struct mcb_inst *inst_outer,
 		struct gnu_asm *ctx)
 {
@@ -139,22 +176,9 @@ build_store_inst(struct mcb_inst *inst_outer,
 	assert(inst->container);
 	switch (inst->container->kind) {
 	case MCB_NORMAL_VALUE:
-		if (inst->kind == MCB_STORE_VALUE) {
-			inst->container->data = inst->operand.value->data;
-			return 0;
-		}
-		return store_imm(inst);
-	case MCB_ARRAY_VALUE:
-		eabort("store to value of array directly");
-	case MCB_ARRAY_ELEM_VALUE:
-		return store_to_array_elem(inst_outer, ctx);
+		return store_normal_value(inst, ctx);
 	case MCB_FUNC_ARG_VALUE:
 		ereturn(1, "store to value of function argument");
-	case MCB_STRUCT_VALUE:
-		eabort("store to value of struct directly");
-		break;
-	case MCB_STRUCT_ELEM_VALUE:
-		return store_to_struct_elem(inst_outer, ctx);
 	case MCB_VAR_VALUE:
 		return store_to_var(inst_outer, ctx);
 	}

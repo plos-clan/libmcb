@@ -95,7 +95,6 @@ build_add_inst(struct mcb_inst *inst_outer,
 	str_from_value(&src, rhs_val);
 
 	estr_clean(&ctx->buf);
-
 	len = snprintf(ctx->buf.s, ctx->buf.siz,
 			"add%c %s, %s\n",
 			get_inst_suffix(lhs_val->kind),

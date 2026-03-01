@@ -26,7 +26,5 @@ mcb_destroy_context(struct mcb_context *ctx)
 		mcb_destroy_func(ctx->fn_arr[i]);
 	free(ctx->fn_arr);
 
-	for (size_t i = 0; i < ctx->struct_arr_count; i++)
-		mcb_destroy_struct(ctx->struct_arr[i]);
 	free(ctx->struct_arr);
 }

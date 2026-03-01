@@ -33,6 +33,8 @@ mcb_target_gnu_asm(FILE *stream, struct mcb_context *ctx)
 
 	blk = text_block_from_cstr(".text\n");
 	append_text_block(&gnu_asm_ctx.text, blk);
+	blk = text_block_from_cstr(".section .rodata\n");
+	append_text_block(&gnu_asm_ctx.rodata, blk);
 
 	estr_empty(&gnu_asm_ctx.buf);
 	estr_expand_siz(&gnu_asm_ctx.buf, 8192);
@@ -46,6 +48,11 @@ mcb_target_gnu_asm(FILE *stream, struct mcb_context *ctx)
 	}
 
 	text_block_for_each(cur, gnu_asm_ctx.text.beg) {
+		if (cur->s.s)
+			fwrite(cur->s.s, sizeof(*cur->s.s), cur->s.len, stream);
+		destroy_text_block(cur);
+	}
+	text_block_for_each(cur, gnu_asm_ctx.rodata.beg) {
 		if (cur->s.s)
 			fwrite(cur->s.s, sizeof(*cur->s.s), cur->s.len, stream);
 		destroy_text_block(cur);

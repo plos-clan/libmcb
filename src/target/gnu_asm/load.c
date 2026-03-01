@@ -24,7 +24,7 @@
 #include "../../text_block.h"
 
 static void alloc_struct_elem(int idx,
-		struct mcb_value_inner_struct *structure,
+		struct mcb_struct_value *structure,
 		struct gnu_asm_struct_value *structure_value,
 		struct gnu_asm_value *address,
 		struct mcb_func *fn);
@@ -36,7 +36,7 @@ static int load_struct(
 
 void
 alloc_struct_elem(int idx,
-		struct mcb_value_inner_struct *structure,
+		struct mcb_struct_value *structure,
 		struct gnu_asm_struct_value *structure_value,
 		struct gnu_asm_value *address,
 		struct mcb_func *fn)
@@ -84,8 +84,7 @@ load_struct(struct gnu_asm_value *address,
 	assert(address && inst && fn && ctx);
 
 	assert(inst->result);
-	assert(inst->result->kind == MCB_STRUCT_VALUE &&
-			inst->result->type == MCB_STRUCT);
+	assert(inst->result->type->builtin == MCB_STRUCT);
 	structure = inst->result->inner.structure.structure;
 	structure_value = ecalloc(1, sizeof(*structure_value));
 	structure_value->values = ecalloc(

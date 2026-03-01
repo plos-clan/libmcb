@@ -66,8 +66,7 @@ build_alloc_array_inst(
 	inst = &inst_outer->inner.alloc_array;
 	assert(inst);
 	assert(inst->container);
-	assert(inst->container->kind == MCB_ARRAY_VALUE);
-	assert(inst->container->type == MCB_ARRAY);
+	assert(inst->container->type->builtin == MCB_ARRAY);
 
 	if (inst->container->scope_end == inst_outer)
 		return 0;

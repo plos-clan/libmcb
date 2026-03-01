@@ -14,8 +14,7 @@ destroy_struct_value(struct mcb_value *container)
 	struct gnu_asm_struct_value *struct_value;
 	if (!container)
 		return;
-	assert(container->kind == MCB_STRUCT_VALUE &&
-			container->type == MCB_STRUCT);
+	assert(container->type->builtin == MCB_STRUCT);
 
 	struct_value = container->data;
 	for (int i = 0; i < container->inner.structure

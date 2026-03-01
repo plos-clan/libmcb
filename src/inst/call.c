@@ -26,7 +26,7 @@ check_arg(const struct mcb_func *callee,
 	assert(callee);
 	if (arg == NULL)
 		ereturn(1, "args[i] == NULL");
-	if (arg->type != callee->args[idx]->type)
+	if (arg->type->builtin != callee->args[idx]->type->builtin)
 		ereturnf(1, "pass different type of arugment to function '%s'",
 				callee->name);
 	return 0;

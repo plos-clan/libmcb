@@ -6,6 +6,7 @@
 #include "mcb/inst.h"
 #include "mcb/label.h"
 #include "mcb/target/gnu_asm.h"
+#include "mcb/type.h"
 #include "mcb/value.h"
 
 #define UTILSH_EALLOC_IMPL
@@ -18,34 +19,27 @@ define_main_fn(struct mcb_context *ctx)
 {
 	/* fn _start(%a0:i32)
 	 * entry:
-	 *     %v0:[i32, 2] = alloc_array
-	 *     %v0[0] = store 114
-	 *     %v0[1] = store 514
-	 *     %v1 = add %v0[0], %v0[1]
 	 *     ret %v1
 	 */
+
+	const struct mcb_type *i32_type = mcb_get_integer_type(MCB_I32);
+
 	struct mcb_func *main_fn =
-		mcb_define_func("_start", MCB_I32, MCB_EXPORT_FUNC, ctx);
-	struct mcb_func_arg *a0 =
-		mcb_define_func_arg("a0", MCB_I32, main_fn);
-	assert(a0);
+		mcb_define_func("_start", i32_type, MCB_EXPORT_FUNC, ctx);
 
-	struct mcb_label *entry = mcb_define_label("entry");
-	mcb_append_label(entry, main_fn);
+	struct mcb_value *va0 =
+		mcb_define_value("%va0", i32_type, main_fn);
+	mcb_append_func_arg(va0, main_fn);
 
-	struct mcb_value *v0 = mcb_define_array("v0", MCB_I32, 2, main_fn);
-	mcb_inst_alloc_array(v0, main_fn);
+	struct mcb_value *v1 =
+		mcb_define_value("%v1", i32_type, main_fn);
+	mcb_inst_store_int(v1, 1, main_fn);
 
-	struct mcb_value *v0_0 = mcb_get_value_from_array(v0, 0, main_fn);
-	struct mcb_value *v0_1 = mcb_get_value_from_array(v0, 1, main_fn);
+	struct mcb_value *v2 =
+		mcb_define_value("%v2", i32_type, main_fn);
+	mcb_inst_add(v2, va0, v1, main_fn);
 
-	mcb_inst_store_int(v0_0, 114, main_fn);
-	mcb_inst_store_int(v0_1, 514, main_fn);
-
-	struct mcb_value *v1 = mcb_define_value("v1", MCB_I32, main_fn);
-	mcb_inst_add(v1, v0_0, v0_1, main_fn);
-
-	mcb_inst_ret(v1, main_fn);
+	mcb_inst_ret(v2, main_fn);
 }
 
 int

@@ -23,8 +23,7 @@ destroy_value(struct mcb_value *container)
 	if (!container)
 		return;
 
-	if (container->kind == MCB_STRUCT_VALUE) {
-		assert(container->type == MCB_STRUCT);
+	if (container->type->builtin == MCB_STRUCT) {
 		destroy_struct_value(container);
 		goto end;
 	}
@@ -68,18 +67,18 @@ map_bytes_to_value_kind(enum GNU_ASM_VALUE_KIND base, int bytes)
 }
 
 enum GNU_ASM_VALUE_KIND
-map_type_to_value_kind(enum GNU_ASM_VALUE_KIND base, enum MCB_TYPE t)
+map_type_to_value_kind(enum GNU_ASM_VALUE_KIND base, const struct mcb_type *t)
 {
 	assert(base != UNKOWN_VALUE);
-	switch (t) {
+	switch (t->builtin) {
 	case MCB_U8:  case MCB_I8:  return base;
 	case MCB_U16: case MCB_I16: return base + 1;
 	case MCB_U32: case MCB_I32: return base + 2;
 	case MCB_U64: case MCB_I64: return base + 3;
-	case MCB_PTR:               return base + 3;
+	case MCB_PTR:
+	case MCB_STRING:
 	case MCB_ARRAY:
-		eabort("unexpected type 'MCB_ARRAY'");
-		break;
+		return base + 3;
 	case MCB_STRUCT:
 		eabort("unexpected type 'MCB_STRUCT'");
 		break;
@@ -145,9 +144,14 @@ str_from_value(struct str *s, const struct gnu_asm_value *v)
 	int reg_off;
 	assert(s && v);
 	switch (v->kind) {
-	case UNKOWN_VALUE: return NULL;
-	CASE_IMM_VALUE: return str_from_imm(s, v);
-	CASE_MEM_VALUE: return str_from_mem(s, v);
+	case UNKOWN_VALUE:
+		return NULL;
+	CASE_DATA_VALUE:
+		return str_from_data(s, v);
+	CASE_IMM_VALUE:
+		return str_from_imm(s, v);
+	CASE_MEM_VALUE:
+		return str_from_mem(s, v);
 	CASE_REG_VALUE:
 		reg_off = reg_offset_from_kind(v->kind);
 		assert(reg_off != -1);

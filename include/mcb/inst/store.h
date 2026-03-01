@@ -9,8 +9,14 @@
 
 enum MCB_STORE_INST_KIND {
 	MCB_STORE_INT,
+	MCB_STORE_STRING,
 	MCB_STORE_UINT,
 	MCB_STORE_VALUE
+};
+
+struct mcb_store_string_operand {
+	char *str;
+	size_t len;
 };
 
 struct mcb_store_inst {
@@ -20,11 +26,17 @@ struct mcb_store_inst {
 		int64_t i;
 		uint64_t u;
 		struct mcb_value *value;
+		struct mcb_store_string_operand str;
 	} operand;
 };
 
 int mcb_inst_store_int(struct mcb_value *container,
 		int64_t data,
+		struct mcb_func *fn);
+
+int mcb_inst_store_string(struct mcb_value *container,
+		const char *str,
+		size_t len,
 		struct mcb_func *fn);
 
 int mcb_inst_store_uint(struct mcb_value *container,

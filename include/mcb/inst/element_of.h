@@ -1,0 +1,21 @@
+/* This file is part of libmcb.
+   SPDX-License-Identifier: LGPL-3.0-or-later
+*/
+#ifndef LIBMCB_INST_ELEMENT_OF_H
+#define LIBMCB_INST_ELEMENT_OF_H
+#include "mcb/func.h"
+#include "mcb/value.h"
+
+struct mcb_element_of_inst {
+	struct mcb_value *result;
+	struct mcb_value *container;
+	int idx;
+};
+
+int mcb_inst_element_of(
+		struct mcb_value *result,
+		struct mcb_value *container,
+		int idx,
+		struct mcb_func *fn);
+
+#endif

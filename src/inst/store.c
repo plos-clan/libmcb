@@ -3,6 +3,7 @@
 */
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 #include "mcb/func.h"
 #include "mcb/inst/store.h"
 #include "mcb/value.h"
@@ -27,6 +28,33 @@ mcb_inst_store_int(struct mcb_value *container,
 	if (mcb_use_value(inst, container))
 		goto err_free_inst;
 	return mcb_append_inst(inst, fn);
+err_free_inst:
+	free(inst);
+	return 1;
+}
+
+int
+mcb_inst_store_string(struct mcb_value *container,
+		const char *str,
+		size_t len,
+		struct mcb_func *fn)
+{
+	struct mcb_inst *inst;
+	if (!container || !fn)
+		ereturn(1, "!container || !fn");
+	inst = ecalloc(1, sizeof(*inst));
+	inst->kind = MCB_STORE_INST;
+	inst->inner.store.container = container;
+	inst->inner.store.kind = MCB_STORE_STRING;
+	inst->inner.store.operand.str.str = strdup(str);
+	if (!inst->inner.store.operand.str.str)
+		goto err_free_inst;
+	inst->inner.store.operand.str.len = len;
+	if (mcb_use_value(inst, container))
+		goto err_free_inst;
+	if (mcb_append_inst(inst, fn))
+		goto err_free_inst;
+	return 0;
 err_free_inst:
 	free(inst);
 	return 1;

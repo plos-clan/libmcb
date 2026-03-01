@@ -12,6 +12,7 @@
 #include "mcb/inst/call.h"
 #include "mcb/inst/cmp.h"
 #include "mcb/inst/div.h"
+#include "mcb/inst/element_of.h"
 #include "mcb/inst/load.h"
 #include "mcb/inst/mul.h"
 #include "mcb/inst/ret.h"
@@ -28,6 +29,7 @@ enum MCB_INST_KIND {
 	MCB_CALL_INST,
 	MCB_CMP_INST,
 	MCB_DIV_INST,
+	MCB_ELEMENT_OF_INST,
 	MCB_LOAD_INST,
 	MCB_MUL_INST,
 	MCB_RET_INST,
@@ -47,6 +49,7 @@ struct mcb_inst {
 		struct mcb_call_inst         call;
 		struct mcb_cmp_inst          cmp;
 		struct mcb_div_inst          div;
+		struct mcb_element_of_inst   element_of;
 		struct mcb_load_inst         load;
 		struct mcb_mul_inst          mul;
 		struct mcb_ret_inst          ret;

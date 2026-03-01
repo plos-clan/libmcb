@@ -15,20 +15,17 @@ enum MCB_FUNC_EXPORT_TYPE {
 	MCB_LOCAL_FUNC
 };
 
-struct mcb_func_arg {
-	char *name;
-	enum MCB_TYPE type;
-	struct mcb_value *val_link;
-};
-
 struct mcb_func {
 	int argc;
-	struct mcb_func_arg **args;
+	struct mcb_value **args;
 
 	char *name;
 
 	enum MCB_FUNC_EXPORT_TYPE export_type;
-	enum MCB_TYPE type;
+	const struct mcb_type *type;
+
+	/* 'syscall_num < 0' isn't a syscall function */
+	int syscall_num;
 
 	struct mcb_inst **inst_arr;
 	size_t inst_arr_count;
@@ -44,16 +41,12 @@ struct mcb_func {
 
 struct mcb_func *mcb_define_func(
 		const char *name,
-		enum MCB_TYPE type,
+		const struct mcb_type *type,
 		enum MCB_FUNC_EXPORT_TYPE export_type,
 		struct mcb_context *ctx);
 
-struct mcb_func_arg *mcb_define_func_arg(
-		const char *name,
-		enum MCB_TYPE type,
-		struct mcb_func *fn);
+int mcb_append_func_arg(struct mcb_value *val, struct mcb_func *fn);
 
 void mcb_destroy_func(struct mcb_func *fn);
-void mcb_destroy_func_arg(struct mcb_func_arg *arg);
 
 #endif

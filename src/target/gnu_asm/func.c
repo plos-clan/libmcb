@@ -42,6 +42,7 @@ struct func_call_context {
 
 static void align_stack(struct gnu_asm_func *fn, struct gnu_asm *ctx);
 static void build_call(const struct mcb_func *callee, struct gnu_asm *ctx);
+static void build_syscall(struct func_call_context *ctx);
 static bool can_define_label(
 		const struct mcb_func *fn,
 		size_t label_idx,
@@ -118,6 +119,24 @@ build_call(const struct mcb_func *callee, struct gnu_asm *ctx)
 	append_text_block(&ctx->text, blk);
 }
 
+void
+build_syscall(struct func_call_context *ctx)
+{
+	struct text_block *blk;
+	int len;
+	assert(ctx);
+
+	estr_clean(&ctx->ctx->buf);
+	len = snprintf(ctx->ctx->buf.s, ctx->ctx->buf.siz,
+			"movq $%d, %%rax\nsyscall\n",
+			ctx->inst->callee->syscall_num);
+	if (len < 0)
+		eabort("snprintf()");
+	ctx->ctx->buf.len = len;
+	blk = text_block_from_str(&ctx->ctx->buf);
+	append_text_block(&ctx->ctx->text, blk);
+}
+
 bool
 can_define_label(
 		const struct mcb_func *fn,
@@ -143,14 +162,20 @@ define_func_beg(struct mcb_func *fn, struct gnu_asm *ctx)
 	f = ecalloc(1, sizeof(*f));
 	fn->data = f;
 
-	estr_clean(&ctx->buf);
+	/* alloc func->args[*]->val_link->data */
+	if (fn->argc && !fn->args)
+		eabort("fn->argc > 0 && fn->args == NULL");
+	for (int i = 0; i < fn->argc; i++)
+		init_func_arg_value(i, fn);
+	if (fn->inst_arr_count == 0)
+		return NULL;
 
+	estr_clean(&ctx->buf);
 	if (fn->export_type == MCB_EXPORT_FUNC)
 		ctx->buf.len = snprintf(
 				ctx->buf.s,
 				ctx->buf.siz,
 				".globl %s\n", fn->name);
-
 	ctx->buf.len += snprintf(
 			&ctx->buf.s[ctx->buf.len],
 			ctx->buf.siz - ctx->buf.len,
@@ -160,12 +185,6 @@ define_func_beg(struct mcb_func *fn, struct gnu_asm *ctx)
 
 	blk = text_block_from_str(&ctx->buf);
 	append_text_block(&ctx->text, blk);
-
-	/* alloc func->args[*]->val_link->data */
-	if (fn->argc && !fn->args)
-		eabort("fn->argc > 0 && fn->args == NULL");
-	for (int i = 0; i < fn->argc; i++)
-		init_func_arg_value(i, fn);
 
 	return blk;
 }
@@ -209,21 +228,15 @@ void
 init_func_arg_value(int idx, struct mcb_func *fn)
 {
 	struct gnu_asm_value *gval;
-	struct mcb_func_arg *arg;
 
 	assert(fn && fn->args);
-	arg = fn->args[idx];
-	assert(arg);
-
-	if (!arg->val_link)
-		return;
 
 	if (idx > (int)LENGTH(arg_alloc_arr))
 		eabort("unsupport, idx > LENGTH(arg_alloc_arr)");
 
-	gval = arg->val_link->data = ecalloc(1, sizeof(*gval));
-	gval->container = arg->val_link;
-	gval->kind = map_type_to_value_kind(I8_REG_VALUE, arg->type);
+	gval = fn->args[idx]->data = ecalloc(1, sizeof(*gval));
+	gval->container = fn->args[idx];
+	gval->kind = map_type_to_value_kind(I8_REG_VALUE, fn->args[idx]->type);
 	gval->inner.reg = alloc_reg(arg_alloc_arr[idx], gval, fn);
 	if (gval->inner.reg == REG_COUNT)
 		eabort("alloc_reg()");
@@ -350,6 +363,9 @@ define_func(struct mcb_func *fn, struct gnu_asm *ctx)
 	assert(fn && ctx);
 
 	beg_blk = define_func_beg(fn, ctx);
+	/* function declaration only */
+	if (!beg_blk)
+		return 0;
 	f = fn->data;
 	assert(f);
 	f->beg_blk = beg_blk;
@@ -407,7 +423,11 @@ build_call_inst(struct mcb_inst *inst_outer,
 		push_arg(i, &call_ctx);
 
 	save_regs_before_call(&call_ctx);
-	build_call(inst->callee, ctx);
+	if (inst->callee->syscall_num == 0) {
+		build_call(inst->callee, ctx);
+	} else {
+		build_syscall(&call_ctx);
+	}
 
 	for (int i = 0; i < call_ctx.argc; i++)
 		drop_arg(i, &call_ctx);
