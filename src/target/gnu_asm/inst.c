@@ -28,6 +28,7 @@ build_inst(struct mcb_inst *inst,
 	case MCB_CMP_INST:        return build_cmp_inst(inst, fn, ctx);
 	case MCB_DIV_INST:        return build_div_inst(inst, fn, ctx);
 	case MCB_ELEMENT_OF_INST: return build_element_of_inst(inst, fn, ctx);
+	case MCB_JMP_INST:        return build_jmp_inst(inst, fn, ctx);
 	case MCB_LOAD_INST:       return build_load_inst(inst, fn, ctx);
 	case MCB_MUL_INST:        return build_mul_inst(inst, fn, ctx);
 	case MCB_RET_INST:        return build_ret_inst(inst, fn, ctx);

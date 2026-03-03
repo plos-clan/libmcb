@@ -16,6 +16,7 @@
 #include "struct.h"
 #include "value.h"
 
+#include "../utils.h"
 #include "../../ealloc.h"
 #include "../../err.h"
 #include "../../str.h"
@@ -96,7 +97,7 @@ store_to_array_elem(
 	assert(inst);
 	assert(inst->container);
 
-	if (inst->container->scope_end == inst_outer)
+	if (mcb_is_inst_unwanted(inst->container, inst_outer))
 		return 0;
 
 	val = inst->container->data;
@@ -116,7 +117,7 @@ store_to_struct_elem(
 	struct gnu_asm_struct_value *struct_val;
 	struct gnu_asm_value *val;
 
-	if (inst->container->scope_end == inst_outer)
+	if (mcb_is_inst_unwanted(inst->container, inst_outer))
 		return 0;
 
 	struct_elem = &inst->container->inner.structure_elem;
@@ -136,7 +137,7 @@ store_to_value(struct gnu_asm_value *val,
 	struct mcb_store_inst *inst = &inst_outer->inner.store;
 	struct gnu_asm_value src, *src_ptr;
 	assert(val);
-	if (inst->container->scope_end == inst_outer)
+	if (mcb_is_inst_unwanted(inst->container, inst_outer))
 		return 0;
 
 	if (inst->kind == MCB_STORE_VALUE) {

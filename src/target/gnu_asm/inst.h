@@ -31,6 +31,7 @@
 #define build_element_of_inst \
 	mcb__gnu_asm_build_element_of_inst           /*    element_of.c */
 #define build_inst           mcb__gnu_asm_build_inst        /* inst.c   */
+#define build_jmp_inst       mcb__gnu_asm_build_jmp_inst    /* jmp.c    */
 #define build_load_inst      mcb__gnu_asm_build_load_inst   /* load.c   */
 #define build_mul_inst       mcb__gnu_asm_build_mul_inst    /* mul.c    */
 #define build_ret_inst       mcb__gnu_asm_build_ret_inst    /* ret.c    */
@@ -80,6 +81,10 @@ int mcb__gnu_asm_build_element_of_inst(struct mcb_inst *inst_outer,
 		struct gnu_asm *ctx);
 
 int mcb__gnu_asm_build_inst(struct mcb_inst *inst,
+		struct mcb_func *fn,
+		struct gnu_asm *ctx);
+
+int mcb__gnu_asm_build_jmp_inst(struct mcb_inst *inst,
 		struct mcb_func *fn,
 		struct gnu_asm *ctx);
 

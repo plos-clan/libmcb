@@ -63,7 +63,7 @@ build_branch_inst(struct mcb_inst *inst_outer,
 			unwarped_label);
 	free(unwarped_label);
 	if (len < 0)
-		return 1;
+		eabort("snprintf()");
 	ctx->buf.len = len;
 	blk = text_block_from_str(&ctx->buf);
 	append_text_block(&ctx->text, blk);

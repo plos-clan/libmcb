@@ -8,7 +8,7 @@ BUILD_DIR = build
 HEADER = mcb
 TARGET = libmcb.a
 
-SUB_DIRS = src src/inst src/target/gnu_asm
+SUB_DIRS = src src/inst src/target src/target/gnu_asm
 SRC = $(wildcard *.c $(addsuffix /*.c,$(SUB_DIRS)))
 OBJ = $(addprefix $(BUILD_DIR)/,$(SRC:.c=.o))
 OBJ_DIRS = $(BUILD_DIR) $(addprefix $(BUILD_DIR)/,$(SUB_DIRS))

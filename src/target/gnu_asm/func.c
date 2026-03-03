@@ -20,6 +20,7 @@
 #include "value.h"
 #include "value_kind.h"
 
+#include "../utils.h"
 #include "../../darr.h"
 #include "../../ealloc.h"
 #include "../../err.h"
@@ -396,7 +397,8 @@ build_call_inst(struct mcb_inst *inst_outer,
 	assert(inst_outer && fn && ctx);
 	inst = &inst_outer->inner.call;
 	assert(inst);
-	if (inst->result->scope_end == inst_outer)
+
+	if (mcb_is_inst_unwanted(inst->result, inst_outer))
 		return 0;
 
 	assert(inst->callee);

@@ -17,6 +17,7 @@
 #include "value.h"
 #include "value_kind.h"
 
+#include "../utils.h"
 #include "../../ealloc.h"
 #include "../../err.h"
 #include "../../str.h"
@@ -89,11 +90,11 @@ build_cmp_inst(struct mcb_inst *inst_outer,
 	result->inner.operator = inst->operator;
 
 	/* Operation direction is reversed in gnu assembly,
-	 * So, [lhs_str] and [rhs_str] also need reversed.
+	 * So, [lhs] and [rhs] also need reversed.
 	 * In fact, I don't fucking know wtf gnu asm
 	 * and amd64 architecture. */
-	build_lhs(&rhs_str, lhs, fn, ctx);
-	build_rhs(&lhs_str, rhs, fn, ctx);
+	build_lhs(&lhs_str, rhs, fn, ctx);
+	build_rhs(&rhs_str, lhs, fn, ctx);
 
 	estr_clean(&ctx->buf);
 	len = snprintf(ctx->buf.s, ctx->buf.siz, "cmp%c %s, %s\n",

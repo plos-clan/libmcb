@@ -17,6 +17,7 @@
 #include "struct.h"
 #include "value.h"
 
+#include "../utils.h"
 #include "../../ealloc.h"
 #include "../../err.h"
 #include "../../str.h"
@@ -68,7 +69,7 @@ build_alloc_array_inst(
 	assert(inst->container);
 	assert(inst->container->type->builtin == MCB_ARRAY);
 
-	if (inst->container->scope_end == inst_outer)
+	if (mcb_is_inst_unwanted(inst->container, inst_outer))
 		return 0;
 
 	for (size_t i = inst->container->inner.array.size - 1;
