@@ -43,7 +43,6 @@ enum MCB_INST_KIND {
 };
 
 struct mcb_inst {
-	bool force_gen;
 	enum MCB_INST_KIND kind;
 	union {
 		struct mcb_add_inst          add;
@@ -64,8 +63,6 @@ struct mcb_inst {
 		struct mcb_sub_inst          sub;
 	} inner;
 };
-
-void mcb_force_gen_inst(struct mcb_func *fn);
 
 void mcb_destroy_inst(struct mcb_inst *inst);
 

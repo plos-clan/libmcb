@@ -17,7 +17,6 @@
 #include "utils.h"
 #include "value.h"
 
-#include "../utils.h"
 #include "../../ealloc.h"
 #include "../../err.h"
 #include "../../str.h"
@@ -212,8 +211,6 @@ build_div_inst(struct mcb_inst *inst_outer,
 	inst = &inst_outer->inner.div;
 
 	assert(inst->result && inst->result->scope_end);
-	if (mcb_is_inst_unwanted(inst->result, inst_outer))
-		return 0;
 
 	if (get_lhs_and_rhs(&lhs_val, &rhs_val, inst))
 		return 1;

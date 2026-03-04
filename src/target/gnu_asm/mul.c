@@ -17,7 +17,6 @@
 #include "utils.h"
 #include "value.h"
 
-#include "../utils.h"
 #include "../../ealloc.h"
 #include "../../err.h"
 #include "../../str.h"
@@ -167,9 +166,6 @@ build_mul_inst(struct mcb_inst *inst_outer,
 
 	assert(inst_outer && fn && ctx);
 	inst = &inst_outer->inner.mul;
-
-	if (mcb_is_inst_unwanted(inst->result, inst_outer))
-		return 0;
 
 	get_lhs_and_rhs(&lhs_val, &rhs_val, inst);
 	if (((struct gnu_asm_func*)fn->data)->allocated_reg[RAX]) {

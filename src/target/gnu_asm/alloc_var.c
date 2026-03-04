@@ -15,7 +15,6 @@
 #include "mem.h"
 #include "value.h"
 
-#include "../utils.h"
 #include "../../ealloc.h"
 #include "../../err.h"
 #include "../../str.h"
@@ -34,9 +33,6 @@ build_alloc_var_inst(struct mcb_inst *inst_outer,
 	inst = &inst_outer->inner.alloc_var;
 	assert(inst);
 	assert(inst->container);
-
-	if (mcb_is_inst_unwanted(inst->container, inst_outer))
-		return 0;
 
 	val = ecalloc(1, sizeof(*val));
 	val->container = inst->container;

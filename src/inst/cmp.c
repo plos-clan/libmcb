@@ -46,3 +46,18 @@ err_free_inst:
 	free(inst);
 	return 1;
 }
+
+enum MCB_CMP_OPERATOR
+mcb_reverse_cmp_op(enum MCB_CMP_OPERATOR op)
+{
+	switch (op) {
+	case MCB_EQ: return MCB_NE;
+	case MCB_GE: return MCB_LT;
+	case MCB_GT: return MCB_LE;
+	case MCB_LE: return MCB_GT;
+	case MCB_LT: return MCB_GE;
+	case MCB_NE: return MCB_EQ;
+	}
+	eabort("reverse_cmp_op(): location that must not be reached");
+	return -1;
+}

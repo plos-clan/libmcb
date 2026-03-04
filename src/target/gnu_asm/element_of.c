@@ -18,7 +18,6 @@
 #include "struct.h"
 #include "value.h"
 
-#include "../utils.h"
 #include "../../ealloc.h"
 #include "../../err.h"
 #include "../../str.h"
@@ -34,8 +33,5 @@ build_element_of_inst(struct mcb_inst *inst_outer,
 	inst = &inst_outer->inner.element_of;
 	assert(inst);
 	
-	if (mcb_is_inst_unwanted(inst->result, inst_outer))
-		return 0;
-
 	return 0;
 }

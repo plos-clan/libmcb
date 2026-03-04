@@ -11,7 +11,6 @@
 #include "mcb/value.h"
 
 #define LIBMCB_STRIP
-#include "cmp.h"
 #include "gen_mov.h"
 #include "gnu_asm.h"
 #include "inst.h"
@@ -24,8 +23,12 @@
 #include "../../text_block.h"
 
 static const char *jcc_template[] = {
+	[MCB_EQ] = "je %s\n",
+	[MCB_GE] = "jge %s\n",
 	[MCB_GT] = "jg %s\n",
-	[MCB_LE] = "jle %s\n"
+	[MCB_LE] = "jle %s\n",
+	[MCB_LT] = "jl %s\n",
+	[MCB_NE] = "jne %s\n"
 };
 
 int
@@ -55,7 +58,7 @@ build_branch_inst(struct mcb_inst *inst_outer,
 	if (!unwarped_label)
 		eabort("unwarp_label()");
 
-	reversed_cmp = reverse_cmp_op(cmp_result->inner.operator);
+	reversed_cmp = mcb_reverse_cmp_op(cmp_result->inner.operator);
 
 	estr_clean(&ctx->buf);
 	len = snprintf(ctx->buf.s, ctx->buf.siz,

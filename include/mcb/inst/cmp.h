@@ -7,8 +7,12 @@
 #include "mcb/value.h"
 
 enum MCB_CMP_OPERATOR {
+	MCB_EQ,
+	MCB_GE,
 	MCB_GT,
-	MCB_LE
+	MCB_LE,
+	MCB_LT,
+	MCB_NE,
 };
 
 struct mcb_cmp_inst {
@@ -22,5 +26,7 @@ int mcb_inst_cmp(struct mcb_value *result,
 		enum MCB_CMP_OPERATOR operator,
 		struct mcb_value *rhs,
 		struct mcb_func *fn);
+
+enum MCB_CMP_OPERATOR mcb_reverse_cmp_op(enum MCB_CMP_OPERATOR op);
 
 #endif
