@@ -28,6 +28,9 @@ destroy_value(struct mcb_value *container)
 		goto end;
 	}
 
+	if (container->type->builtin == MCB_ARRAY)
+		return;
+
 	val = container->data;
 	if (!val)
 		return;
