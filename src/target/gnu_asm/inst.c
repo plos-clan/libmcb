@@ -32,7 +32,7 @@ build_inst(struct mcb_inst *inst,
 	case MCB_LOAD_INST:       return build_load_inst(inst, fn, ctx);
 	case MCB_MUL_INST:        return build_mul_inst(inst, fn, ctx);
 	case MCB_RET_INST:        return build_ret_inst(inst, fn, ctx);
-	case MCB_STORE_INST:      return build_store_inst(inst, ctx);
+	case MCB_STORE_INST:      return build_store_inst(inst, fn, ctx);
 	case MCB_SUB_INST:        return build_sub_inst(inst, fn, ctx);
 	}
 

@@ -36,7 +36,7 @@ build_ret_inst(struct mcb_inst *inst_outer,
 	dst.inner.reg = RAX;
 
 	estr_clean(&ctx->buf);
-	if (gen_mov(&ctx->buf, &dst, src))
+	if (gen_mov(&ctx->buf, &dst, src, fn, ctx))
 		eabort("gen_mov()");
 	blk = text_block_from_str(&ctx->buf);
 	append_text_block(&ctx->text, blk);

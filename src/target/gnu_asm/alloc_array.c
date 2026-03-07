@@ -51,6 +51,7 @@ alloc_elem(size_t idx,
 	if (!val->inner.mem)
 		eabort("alloc_stack_mem()");
 	val_container->data = val;
+	val_container->kind = MCB_VAR_VALUE;
 }
 
 int

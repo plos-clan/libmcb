@@ -311,7 +311,7 @@ push_arg(int idx, struct func_call_context *ctx)
 	}
 
 	estr_clean(&ctx->ctx->buf);
-	if (gen_mov(&ctx->ctx->buf, arg, val))
+	if (gen_mov(&ctx->ctx->buf, arg, val, ctx->fn, ctx->ctx))
 		return;
 	blk = text_block_from_str(&ctx->ctx->buf);
 	append_text_block(&ctx->ctx->text, blk);

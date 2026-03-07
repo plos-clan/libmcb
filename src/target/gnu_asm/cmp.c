@@ -55,7 +55,7 @@ build_rhs(struct str *str,
 		tmp = *val;
 		val->kind = remap_value_kind(I8_REG_VALUE, val->kind);
 		val->inner.reg = alloc_reg(AUTO_ALLOC_REG, val, fn);
-		if (gen_mov(&ctx->buf, val, &tmp))
+		if (gen_mov(&ctx->buf, val, &tmp, fn, ctx))
 			eabort("gen_mov()");
 		blk = text_block_from_str(&ctx->buf);
 		append_text_block(&ctx->text, blk);

@@ -27,8 +27,12 @@ static int store_string(struct mcb_store_inst *inst, struct gnu_asm *ctx);
 static int store_to_value(
 		struct gnu_asm_value *val,
 		struct mcb_inst *inst_outer,
+		struct mcb_func *fn,
 		struct gnu_asm *ctx);
-static int store_to_var(struct mcb_inst *inst_outer, struct gnu_asm *ctx);
+static int store_to_var(
+		struct mcb_inst *inst_outer,
+		struct mcb_func *fn,
+		struct gnu_asm *ctx);
 
 void
 store_imm(struct mcb_store_inst *inst)
@@ -85,6 +89,7 @@ store_string(struct mcb_store_inst *inst, struct gnu_asm *ctx)
 int
 store_to_value(struct gnu_asm_value *val,
 		struct mcb_inst *inst_outer,
+		struct mcb_func *fn,
 		struct gnu_asm *ctx)
 {
 	struct text_block *blk;
@@ -101,7 +106,7 @@ store_to_value(struct gnu_asm_value *val,
 	}
 
 	estr_clean(&ctx->buf);
-	if (gen_mov(&ctx->buf, val, src_ptr))
+	if (gen_mov(&ctx->buf, val, src_ptr, fn, ctx))
 		eabort("gen_mov()");
 	blk = text_block_from_str(&ctx->buf);
 	append_text_block(&ctx->text, blk);
@@ -110,16 +115,20 @@ store_to_value(struct gnu_asm_value *val,
 }
 
 int
-store_to_var(struct mcb_inst *inst_outer, struct gnu_asm *ctx)
+store_to_var(
+		struct mcb_inst *inst_outer,
+		struct mcb_func *fn,
+		struct gnu_asm *ctx)
 {
 	struct mcb_store_inst *inst = &inst_outer->inner.store;
 	struct gnu_asm_value *val = inst->container->data;
 	assert(val);
-	return store_to_value(val, inst_outer, ctx);
+	return store_to_value(val, inst_outer, fn, ctx);
 }
 
 int
 build_store_inst(struct mcb_inst *inst_outer,
+		struct mcb_func *fn,
 		struct gnu_asm *ctx)
 {
 	struct mcb_store_inst *inst;
@@ -133,7 +142,7 @@ build_store_inst(struct mcb_inst *inst_outer,
 	case MCB_FUNC_ARG_VALUE:
 		ereturn(1, "store to value of function argument");
 	case MCB_VAR_VALUE:
-		return store_to_var(inst_outer, ctx);
+		return store_to_var(inst_outer, fn, ctx);
 	}
 	return 0;
 }

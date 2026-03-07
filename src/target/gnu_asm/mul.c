@@ -58,7 +58,7 @@ build_lhs(struct gnu_asm_value *result,
 		return;
 
 	estr_clean(&ctx->buf);
-	if (gen_mov(&ctx->buf, result, val))
+	if (gen_mov(&ctx->buf, result, val, fn, ctx))
 		eabort("gen_mov()");
 	blk = text_block_from_str(&ctx->buf);
 	append_text_block(&ctx->text, blk);
@@ -81,15 +81,15 @@ build_rhs(struct str *src,
 		if (tmp.inner.reg == REG_COUNT)
 			eabort("alloc_reg()");
 		estr_clean(&ctx->buf);
-		if (gen_mov(&ctx->buf, &tmp, val))
+		if (gen_mov(&ctx->buf, &tmp, val, fn, ctx))
 			eabort("gen_mov()");
 		blk = text_block_from_str(&ctx->buf);
 		append_text_block(&ctx->text, blk);
 		str_from_value(src, &tmp);
 		drop_reg(tmp.inner.reg, fn);
 		break;
-	CASE_REG_VALUE:
 	CASE_MEM_VALUE:
+	CASE_REG_VALUE:
 		str_from_value(src, val);
 		break;
 	default:
@@ -152,11 +152,9 @@ get_result(const struct mcb_value *res, struct mcb_func *fn)
 bool
 need_mov_to_rax(const struct gnu_asm_value *val)
 {
-	if (IS_IMM(val->kind))
-		return true;
-	if (IS_REG(val->kind) && val->inner.reg != RAX)
-		return true;
-	return false;
+	if (IS_REG(val->kind) && val->inner.reg == RAX)
+		return false;
+	return true;
 }
 
 int

@@ -24,17 +24,19 @@
 static void mov_to_result(
 		struct gnu_asm_value *result,
 		struct gnu_asm_value *dst,
+		struct mcb_func *fn,
 		struct gnu_asm *ctx);
 
 void
 mov_to_result(struct gnu_asm_value *result,
 		struct gnu_asm_value *dst,
+		struct mcb_func *fn,
 		struct gnu_asm *ctx)
 {
 	struct text_block *blk;
 	assert(result && dst && ctx);
 	estr_clean(&ctx->buf);
-	if (gen_mov(&ctx->buf, result, dst))
+	if (gen_mov(&ctx->buf, result, dst, fn, ctx))
 		eabort("gen_mov()");
 	blk = text_block_from_str(&ctx->buf);
 	append_text_block(&ctx->text, blk);
@@ -79,7 +81,7 @@ build_sub_inst(struct mcb_inst *inst_outer,
 	}
 	result->container = inst->result;
 
-	mov_to_result(result, lhs_val, ctx);
+	mov_to_result(result, lhs_val, fn, ctx);
 	str_from_value(&dst, result);
 	str_from_value(&src, rhs_val);
 

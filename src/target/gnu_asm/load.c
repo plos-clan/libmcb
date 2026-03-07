@@ -130,7 +130,7 @@ build_load_inst(struct mcb_inst *inst_outer,
 		eabort("alloc_reg()");
 
 	estr_clean(&ctx->buf);
-	if (gen_mov(&ctx->buf, result, address))
+	if (gen_mov(&ctx->buf, result, address, fn, ctx))
 		eabort("gen_mov()");
 	blk = text_block_from_str(&ctx->buf);
 	append_text_block(&ctx->text, blk);

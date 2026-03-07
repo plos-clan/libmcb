@@ -103,6 +103,7 @@ int mcb__gnu_asm_build_ret_inst(struct mcb_inst *inst_outer,
 		struct gnu_asm *ctx);
 
 int mcb__gnu_asm_build_store_inst(struct mcb_inst *inst_outer,
+		struct mcb_func *fn,
 		struct gnu_asm *ctx);
 
 int mcb__gnu_asm_build_sub_inst(struct mcb_inst *inst_outer,
