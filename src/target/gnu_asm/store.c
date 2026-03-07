@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "mcb/func.h"
 #include "mcb/inst.h"
 #include "mcb/value.h"
@@ -20,22 +21,16 @@
 #include "../../err.h"
 #include "../../str.h"
 
-static int store_imm(struct mcb_store_inst *inst);
+static void store_imm(struct mcb_store_inst *inst);
 static int store_normal_value(struct mcb_store_inst *inst, struct gnu_asm *ctx);
 static int store_string(struct mcb_store_inst *inst, struct gnu_asm *ctx);
-static int store_to_array_elem(
-		struct mcb_inst *inst_outer,
-		struct gnu_asm *ctx);
-static int store_to_struct_elem(
-		struct mcb_inst *inst_outer,
-		struct gnu_asm *ctx);
 static int store_to_value(
 		struct gnu_asm_value *val,
 		struct mcb_inst *inst_outer,
 		struct gnu_asm *ctx);
 static int store_to_var(struct mcb_inst *inst_outer, struct gnu_asm *ctx);
 
-int
+void
 store_imm(struct mcb_store_inst *inst)
 {
 	struct gnu_asm_value *v = ecalloc(1, sizeof(*v));
@@ -47,7 +42,6 @@ store_imm(struct mcb_store_inst *inst)
 		eabort("map_type_to_value_kind()");
 	v->inner.imm.i = inst->operand.i;
 	inst->container->data = v;
-	return 0;
 }
 
 int
@@ -57,12 +51,16 @@ store_normal_value(struct mcb_store_inst *inst, struct gnu_asm *ctx)
 	switch (inst->kind) {
 	case MCB_STORE_INT:
 	case MCB_STORE_UINT:
-		return store_imm(inst);
+		store_imm(inst);
+		break;
 	case MCB_STORE_STRING:
 		return store_string(inst, ctx);
 	case MCB_STORE_VALUE:
-		inst->container->data = inst->operand.value->data;
-		return 0;
+		inst->container->data = ecalloc(1, sizeof(struct gnu_asm_value));
+		memcpy(inst->container->data,
+				inst->operand.value->data,
+				sizeof(struct gnu_asm_value));
+		break;
 	}
 	return 0;
 }
@@ -82,43 +80,6 @@ store_string(struct mcb_store_inst *inst, struct gnu_asm *ctx)
 	v->inner.data = alloc_str_data(inst->operand.str.str, v, ctx);
 	inst->container->data = v;
 	return 0;
-}
-
-int
-store_to_array_elem(
-		struct mcb_inst *inst_outer,
-		struct gnu_asm *ctx)
-{
-	struct mcb_store_inst *inst;
-	struct gnu_asm_value *val;
-	assert(inst_outer && ctx);
-	inst = &inst_outer->inner.store;
-	assert(inst);
-	assert(inst->container);
-
-	val = inst->container->data;
-	assert(val);
-
-	return store_to_value(val, inst_outer, ctx);
-}
-
-/* shits 💩 */
-int
-store_to_struct_elem(
-		struct mcb_inst *inst_outer,
-		struct gnu_asm *ctx)
-{
-	struct mcb_store_inst *inst = &inst_outer->inner.store;
-	struct mcb_struct_elem_value *struct_elem;
-	struct gnu_asm_struct_value *struct_val;
-	struct gnu_asm_value *val;
-
-	struct_elem = &inst->container->inner.structure_elem;
-	assert(struct_elem->structure_container);
-	struct_val = struct_elem->structure_container->data;
-	val = struct_val->values[struct_elem->idx];
-	
-	return store_to_value(val, inst_outer, ctx);
 }
 
 int

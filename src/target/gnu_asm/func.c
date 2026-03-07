@@ -32,8 +32,6 @@ struct func_call_context {
 	int argc;
 	struct gnu_asm_value **args;
 
-	struct mcb_func *callee;
-
 	struct mcb_func *fn;
 	struct mcb_call_inst *inst;
 	struct mcb_inst *inst_outer;
@@ -210,7 +208,7 @@ drop_arg(int idx, struct func_call_context *ctx)
 	assert(ctx->fn);
 
 	if (ctx->argc == 0 && ctx->args == NULL) {
-		assert(ctx->callee->argc == 0);
+		assert(ctx->inst->callee->argc == 0);
 		return;
 	}
 

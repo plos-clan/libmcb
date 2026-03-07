@@ -19,6 +19,7 @@ struct mcb_type {
 	struct mcb_type *inner;
 };
 
+void mcb_destroy_type(struct mcb_type *type);
 const struct mcb_type *mcb_get_type_from_builtin(enum MCB_BUILTIN_TYPE builtin);
 
 #endif

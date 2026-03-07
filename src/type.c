@@ -15,6 +15,13 @@ static const struct mcb_type butiltin_types[] = {
 	[MCB_CMP_RESULT] = {MCB_CMP_RESULT}
 };
 
+void
+mcb_destroy_type(struct mcb_type *type)
+{
+	if (!type)
+		return;
+}
+
 const struct mcb_type *
 mcb_get_type_from_builtin(enum MCB_BUILTIN_TYPE builtin)
 {

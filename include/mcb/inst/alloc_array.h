@@ -8,10 +8,12 @@
 
 struct mcb_alloc_array_inst {
 	struct mcb_value *container;
+	size_t size;
 };
 
 int mcb_inst_alloc_array(
 		struct mcb_value *container,
+		size_t size,
 		struct mcb_func *fn);
 
 #endif

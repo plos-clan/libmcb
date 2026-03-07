@@ -9,13 +9,13 @@
 struct mcb_element_of_inst {
 	struct mcb_value *result;
 	struct mcb_value *container;
-	int idx;
+	struct mcb_value *idx;
 };
 
 int mcb_inst_element_of(
 		struct mcb_value *result,
 		struct mcb_value *container,
-		int idx,
+		struct mcb_value *idx,
 		struct mcb_func *fn);
 
 #endif

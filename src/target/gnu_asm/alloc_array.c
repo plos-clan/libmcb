@@ -4,7 +4,6 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "mcb/array.h"
 #include "mcb/func.h"
 #include "mcb/inst.h"
 #include "mcb/inst/alloc_array.h"
@@ -40,6 +39,7 @@ alloc_elem(size_t idx,
 	assert(inst && fn && ctx);
 	array_value = &inst->container->inner.array;
 	val_container = array_value->elems[idx];
+	assert(val_container);
 
 	val = ecalloc(1, sizeof(*val));
 	val->container = val_container;
@@ -50,8 +50,7 @@ alloc_elem(size_t idx,
 	val->inner.mem = alloc_stack_mem(bytes, val, fn);
 	if (!val->inner.mem)
 		eabort("alloc_stack_mem()");
-	if (val_container)
-		val_container->data = val;
+	val_container->data = val;
 }
 
 int
@@ -61,6 +60,7 @@ build_alloc_array_inst(
 		struct gnu_asm *ctx)
 {
 	struct mcb_alloc_array_inst *inst;
+	size_t siz;
 
 	assert(inst_outer && fn && ctx);
 	inst = &inst_outer->inner.alloc_array;
@@ -68,10 +68,13 @@ build_alloc_array_inst(
 	assert(inst->container);
 	assert(inst->container->type->builtin == MCB_ARRAY);
 
-	for (size_t i = inst->container->inner.array.size - 1;
-			i > 0; i--)
+	siz = inst->container->inner.array.size;
+
+	for (size_t i = siz - 1; i > 0; i--)
 		alloc_elem(i, inst, fn, ctx);
 	alloc_elem(0, inst, fn, ctx);
+
+	inst->container->data = inst->container->inner.array.elems[0]->data;
 
 	return 0;
 }

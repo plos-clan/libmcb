@@ -28,8 +28,10 @@
 #define build_call_inst      mcb__gnu_asm_build_call_inst   /* func.c   */
 #define build_cmp_inst       mcb__gnu_asm_build_cmp_inst    /* cmp.c    */
 #define build_div_inst       mcb__gnu_asm_build_div_inst    /* div.c    */
+
 #define build_element_of_inst \
 	mcb__gnu_asm_build_element_of_inst           /*    element_of.c */
+
 #define build_inst           mcb__gnu_asm_build_inst        /* inst.c   */
 #define build_jmp_inst       mcb__gnu_asm_build_jmp_inst    /* jmp.c    */
 #define build_load_inst      mcb__gnu_asm_build_load_inst   /* load.c   */

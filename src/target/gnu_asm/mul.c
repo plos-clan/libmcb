@@ -74,7 +74,8 @@ build_rhs(struct str *src,
 	struct gnu_asm_value tmp;
 	assert(src && val && fn && ctx);
 
-	if (IS_IMM(val->kind)) {
+	switch (val->kind) {
+	CASE_IMM_VALUE:
 		tmp.kind = remap_value_kind(I8_REG_VALUE, val->kind);
 		tmp.inner.reg = alloc_reg(AUTO_ALLOC_REG, &tmp, fn);
 		if (tmp.inner.reg == REG_COUNT)
@@ -86,8 +87,13 @@ build_rhs(struct str *src,
 		append_text_block(&ctx->text, blk);
 		str_from_value(src, &tmp);
 		drop_reg(tmp.inner.reg, fn);
-	} else if (IS_REG(val->kind)) {
+		break;
+	CASE_REG_VALUE:
+	CASE_MEM_VALUE:
 		str_from_value(src, val);
+		break;
+	default:
+		eabort("val->kind");
 	}
 }
 

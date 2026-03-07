@@ -61,6 +61,7 @@ build_add_inst(struct mcb_inst *inst_outer,
 
 	assert(inst->result->data == NULL);
 	result = ecalloc(1, sizeof(*result));
+	result->container = inst->result;
 	result->kind = map_type_to_value_kind(
 			I8_REG_VALUE,
 			inst->result->type);
