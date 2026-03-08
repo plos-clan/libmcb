@@ -26,6 +26,8 @@ mcb_inst_element_of(
 	inst->inner.element_of.container = container;
 	inst->inner.element_of.idx       = idx;
 
+	result->kind = MCB_VAR_VALUE;
+
 	if (mcb_use_value(inst, result))
 		goto err_free_inst;
 	if (mcb_use_value(inst, container))

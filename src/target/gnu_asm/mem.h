@@ -17,6 +17,9 @@ enum GNU_ASM_MEM_KIND {
 struct gnu_asm_mem_obj {
 	enum GNU_ASM_REG base;
 	int offset;
+	enum GNU_ASM_REG index;
+	/* when [scale] == 0, don't generate "offset(base, index, scale)" */
+	int scale;
 
 	enum GNU_ASM_MEM_KIND kind;
 	struct gnu_asm_value *user;

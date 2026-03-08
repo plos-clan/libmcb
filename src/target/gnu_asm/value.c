@@ -42,14 +42,18 @@ end:
 void
 drop_value(struct mcb_value *val, struct mcb_func *fn)
 {
-	struct gnu_asm_value *gval;
-	assert(val);
-	gval = val->data;
-	if (!gval)
-		return;
+	assert(val && fn);
+	drop_value_inner(val->data, fn);
+}
 
-	if (IS_REG(gval->kind))
-		drop_reg(gval->inner.reg, fn);
+void
+drop_value_inner(struct gnu_asm_value *val, struct mcb_func *fn)
+{
+	assert(fn);
+	if (!val)
+		return;
+	if (IS_REG(val->kind))
+		drop_reg(val->inner.reg, fn);
 }
 
 enum GNU_ASM_VALUE_KIND

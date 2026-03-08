@@ -12,6 +12,46 @@
 #include "../../ealloc.h"
 #include "../../str.h"
 
+static struct str *str_from_mem_by_index(
+		struct str *s,
+		const struct gnu_asm_value *v);
+
+struct str *
+str_from_mem_by_index(
+		struct str *s,
+		const struct gnu_asm_value *v)
+{
+	int len;
+	const struct gnu_asm_mem_obj *mem;
+	const char *base_reg_cstr = NULL, *index_reg_cstr = NULL;
+
+	assert(s && v);
+	assert(s->siz);
+	assert(IS_MEM(v->kind));
+
+	mem = v->inner.mem;
+	base_reg_cstr = cstr_from_reg(mem->base, 0);
+	index_reg_cstr = cstr_from_reg(mem->index, 0);
+
+	if (mem->offset == 0) {
+		len = snprintf(s->s, s->siz, "(%s,%s,%d)",
+				base_reg_cstr,
+				index_reg_cstr,
+				mem->scale);
+	} else {
+		len = snprintf(s->s, s->siz, "%d(%s,%s,%d)",
+				mem->offset,
+				base_reg_cstr,
+				index_reg_cstr,
+				mem->scale);
+	}
+
+	if (len < 0)
+		return NULL;
+	s->len = len;
+	return s;
+}
+
 struct gnu_asm_mem_obj *
 alloc_stack_mem(int bytes,
 		struct gnu_asm_value *user,
@@ -43,23 +83,30 @@ str_from_mem(struct str *s, const struct gnu_asm_value *v)
 {
 	int len;
 	const struct gnu_asm_mem_obj *mem;
-	const char *reg_cstr = NULL;
+	const char *base_reg_cstr = NULL;
 
 	assert(s && v);
 	assert(IS_MEM(v->kind));
 	mem = v->inner.mem;
 	assert(mem);
 
-	/* register size offset bust be 0 in 64bit, %ebp is wrong result */
-	reg_cstr = cstr_from_reg(mem->base, 0);
+	/* register size offset must be 0 in 64bit, %ebp is wrong result */
+	base_reg_cstr = cstr_from_reg(mem->base, 0);
 	estr_empty(s);
 	estr_realloc(s, 32);
 
-	if (mem->offset == 0) {
-		len = snprintf(s->s, s->siz, "(%s)", reg_cstr);
-	} else {
-		len = snprintf(s->s, s->siz, "%d(%s)", mem->offset, reg_cstr);
+	if (mem->scale != 0) {
+		if (!str_from_mem_by_index(s, v))
+			goto err_free_s;
+		return s;
 	}
+
+	if (mem->offset == 0) {
+		len = snprintf(s->s, s->siz, "(%s)", base_reg_cstr);
+	} else {
+		len = snprintf(s->s, s->siz, "%d(%s)", mem->offset, base_reg_cstr);
+	}
+
 	if (len < 0)
 		goto err_free_s;
 	s->len = len;
