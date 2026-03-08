@@ -1,6 +1,4 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -8,6 +6,7 @@
 #include "mcb/context.h"
 #include "mcb/func.h"
 #include "mcb/inst.h"
+#include "mcb/label.h"
 
 #include "darr.h"
 #include "ealloc.h"
@@ -66,4 +65,18 @@ mcb_destroy_func(struct mcb_func *fn)
 
 	free(fn->name);
 	free(fn);
+}
+
+void
+mcb_output_func(const struct mcb_func *fn, FILE *stream)
+{
+	fprintf(stream, "fn %s():\n", fn->name);
+	for (size_t i = 0, label_i = 0; i < fn->inst_arr_count; i++) {
+		if (mcb_can_define_label(fn, label_i, i)) {
+			mcb_output_label(fn->label_arr[label_i], stream);
+			label_i++;
+		}
+
+		mcb_output_inst(fn->inst_arr[i], stream);
+	}
 }

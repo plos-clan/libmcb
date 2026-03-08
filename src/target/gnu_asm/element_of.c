@@ -1,6 +1,4 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,8 +26,9 @@ build_element_of_inst(struct mcb_inst *inst_outer,
 		struct mcb_func *fn,
 		struct gnu_asm *ctx)
 {
+	const struct gnu_asm_value *container;
 	struct gnu_asm_mem_obj *mem;
-	struct gnu_asm_value *result, *container;
+	struct gnu_asm_value *result;
 	struct mcb_element_of_inst *inst;
 	assert(inst_outer && fn && ctx);
 	inst = &inst_outer->inner.element_of;

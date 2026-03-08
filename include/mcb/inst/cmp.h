@@ -1,8 +1,7 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #ifndef LIBMCB_INST_CMP_H
 #define LIBMCB_INST_CMP_H
+#include <stdio.h>
 #include "mcb/func.h"
 #include "mcb/value.h"
 
@@ -26,6 +25,8 @@ int mcb_inst_cmp(struct mcb_value *result,
 		enum MCB_CMP_OPERATOR operator,
 		struct mcb_value *rhs,
 		struct mcb_func *fn);
+
+void mcb_output_cmp_inst(const struct mcb_cmp_inst *inst, FILE *stream);
 
 enum MCB_CMP_OPERATOR mcb_reverse_cmp_op(enum MCB_CMP_OPERATOR op);
 

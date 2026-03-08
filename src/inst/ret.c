@@ -1,6 +1,4 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #include <assert.h>
 #include <stdlib.h>
 #include "mcb/func.h"
@@ -28,4 +26,10 @@ mcb_inst_ret(struct mcb_value *val, struct mcb_func *fn)
 err_free_inst:
 	free(inst);
 	return 1;
+}
+
+void
+mcb_output_ret_inst(const struct mcb_ret_inst *inst, FILE *stream)
+{
+	fprintf(stream, "ret %%%s\n", inst->val->name);
 }

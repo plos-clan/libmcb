@@ -1,6 +1,4 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #ifndef LIBMCB_STRUCT_H
 #define LIBMCB_STRUCT_H
 #include "context.h"

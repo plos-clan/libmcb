@@ -1,6 +1,4 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #ifndef LIBMCB_VALUE_H
 #define LIBMCB_VALUE_H
 #include <stddef.h>
@@ -52,6 +50,8 @@ struct mcb_value {
 
 	void *data;
 };
+
+char *mcb_build_value_cstr(const struct mcb_value *value);
 
 struct mcb_value *mcb_define_value(
 		const char *name,

@@ -1,8 +1,7 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #ifndef LIBMCB_CONTEXT_H
 #define LIBMCB_CONTEXT_H
+#include <stdio.h>
 #include <stddef.h>
 #include "mcb/func.h"
 
@@ -16,5 +15,6 @@ struct mcb_context {
 
 int mcb_define_context(struct mcb_context *ctx);
 void mcb_destroy_context(struct mcb_context *ctx);
+void mcb_output_context(const struct mcb_context *ctx, FILE *stream);
 
 #endif

@@ -1,8 +1,7 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #ifndef LIBMCB_FUNC_H
 #define LIBMCB_FUNC_H
+#include <stdio.h>
 #include <stddef.h>
 #include "mcb/label.h"
 #include "mcb/type.h"
@@ -35,6 +34,7 @@ struct mcb_func {
 
 	struct mcb_value **value_arr;
 	size_t value_arr_count;
+	size_t value_auto_named;
 
 	void *data;
 };
@@ -48,5 +48,7 @@ struct mcb_func *mcb_define_func(
 int mcb_append_func_arg(struct mcb_value *val, struct mcb_func *fn);
 
 void mcb_destroy_func(struct mcb_func *fn);
+
+void mcb_output_func(const struct mcb_func *fn, FILE *stream);
 
 #endif

@@ -1,6 +1,4 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -104,4 +102,33 @@ mcb_inst_store_value(struct mcb_value *container,
 err_free_inst:
 	free(inst);
 	return 1;
+}
+
+void
+mcb_output_store_inst(const struct mcb_store_inst *inst, FILE *stream)
+{
+	char *container_str = mcb_build_value_cstr(inst->container);
+	switch (inst->kind) {
+	case MCB_STORE_INT:
+		fprintf(stream, "%s = store %ld\n",
+				container_str,
+				inst->operand.i);
+		break;
+	case MCB_STORE_STRING:
+		fprintf(stream, "%s = store \"%s\"\n",
+				container_str,
+				inst->operand.str.str);
+		break;
+	case MCB_STORE_UINT:
+		fprintf(stream, "%s = store %lu\n",
+				container_str,
+				inst->operand.u);
+		break;
+	case MCB_STORE_VALUE:
+		fprintf(stream, "%s = store %%%s\n",
+				container_str,
+				inst->operand.value->name);
+		break;
+	}
+	free(container_str);
 }

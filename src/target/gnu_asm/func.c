@@ -1,6 +1,4 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -41,10 +39,6 @@ struct func_call_context {
 static void align_stack(struct gnu_asm_func *fn, struct gnu_asm *ctx);
 static void build_call(const struct mcb_func *callee, struct gnu_asm *ctx);
 static void build_syscall(struct func_call_context *ctx);
-static bool can_define_label(
-		const struct mcb_func *fn,
-		size_t label_idx,
-		size_t inst_idx);
 static struct text_block *define_func_beg(struct mcb_func *fn, struct gnu_asm *ctx);
 static void define_func_end(struct mcb_func *fn, struct gnu_asm *ctx);
 static void drop_arg(int idx, struct func_call_context *ctx);
@@ -133,21 +127,6 @@ build_syscall(struct func_call_context *ctx)
 	ctx->ctx->buf.len = len;
 	blk = text_block_from_str(&ctx->ctx->buf);
 	append_text_block(&ctx->ctx->text, blk);
-}
-
-bool
-can_define_label(
-		const struct mcb_func *fn,
-		size_t label_idx,
-		size_t inst_idx)
-{
-	if (!fn->label_arr)
-		return false;
-	if (label_idx >= fn->label_arr_count)
-		return false;
-	if (fn->label_arr[label_idx]->beg == fn->inst_arr[inst_idx])
-		return true;
-	return false;
 }
 
 struct text_block *
@@ -368,7 +347,7 @@ define_func(struct mcb_func *fn, struct gnu_asm *ctx)
 	assert(f);
 	f->beg_blk = beg_blk;
 	for (size_t i = 0, label_i = 0; i < fn->inst_arr_count; i++) {
-		if (can_define_label(fn, label_i, i)) {
+		if (mcb_can_define_label(fn, label_i, i)) {
 			define_label(fn->label_arr[label_i], fn, ctx);
 			label_i++;
 		}

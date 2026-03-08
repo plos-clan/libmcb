@@ -1,6 +1,4 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #ifndef LIBMCB_TYPE_H
 #define LIBMCB_TYPE_H
 
@@ -19,7 +17,10 @@ struct mcb_type {
 	struct mcb_type *inner;
 };
 
+char *mcb_build_type_cstr(const struct mcb_type *type);
+
 void mcb_destroy_type(struct mcb_type *type);
+
 const struct mcb_type *mcb_get_type_from_builtin(enum MCB_BUILTIN_TYPE builtin);
 
 #endif

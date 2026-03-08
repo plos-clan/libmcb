@@ -1,6 +1,4 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #include <assert.h>
 #include <stdlib.h>
 #include "mcb/func.h"
@@ -37,4 +35,15 @@ mcb_inst_sub(struct mcb_value *result,
 err_free_inst:
 	free(inst);
 	return 1;
+}
+
+void
+mcb_output_sub_inst(const struct mcb_sub_inst *inst, FILE *stream)
+{
+	char *result_str = mcb_build_value_cstr(inst->result);
+	fprintf(stream, "%s = sub %%%s, %%%s\n",
+			result_str,
+			inst->lhs->name,
+			inst->rhs->name);
+	free(result_str);
 }

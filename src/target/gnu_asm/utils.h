@@ -1,6 +1,4 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #ifndef LIBMCB_TARGET_GNU_ASM_UTILS_H
 #define LIBMCB_TARGET_GNU_ASM_UTILS_H
 #include "mcb/func.h"

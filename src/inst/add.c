@@ -1,7 +1,6 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include "mcb/func.h"
 #include "mcb/inst/add.h"
@@ -37,4 +36,15 @@ mcb_inst_add(struct mcb_value *result,
 err_free_inst:
 	free(inst);
 	return 1;
+}
+
+void
+mcb_output_add_inst(const struct mcb_add_inst *inst, FILE *stream)
+{
+	char *result_str = mcb_build_value_cstr(inst->result);
+	fprintf(stream, "%s = add %%%s, %%%s\n",
+			result_str,
+			inst->lhs->name,
+			inst->rhs->name);
+	free(result_str);
 }

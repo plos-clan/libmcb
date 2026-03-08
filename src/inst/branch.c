@@ -1,6 +1,4 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #include <assert.h>
 #include <stdlib.h>
 #include "mcb/func.h"
@@ -34,4 +32,13 @@ mcb_inst_branch(struct mcb_value *cmp_result,
 err_free_inst:
 	free(inst);
 	return 1;
+}
+
+void
+mcb_output_branch_inst(const struct mcb_branch_inst *inst, FILE *stream)
+{
+	fprintf(stream, "branch %%%s, %%%s, %%%s\n",
+			inst->cmp_result->name,
+			inst->on_true->name,
+			inst->on_false->name);
 }

@@ -1,6 +1,4 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -69,4 +67,14 @@ mcb_inst_alloc_array(
 err_free_inst:
 	free(inst);
 	return 1;
+}
+
+void
+mcb_output_alloc_array_inst(const struct mcb_alloc_array_inst *inst, FILE *stream)
+{
+	char *container_str = mcb_build_value_cstr(inst->container);
+	fprintf(stream, "%s = alloc_array %lu\n",
+			container_str,
+			inst->size);
+	free(container_str);
 }

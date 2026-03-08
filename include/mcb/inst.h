@@ -1,8 +1,7 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #ifndef LIBMCB_INST_H
 #define LIBMCB_INST_H
+#include <stdio.h>
 #include <stdbool.h>
 #include "mcb/inst/add.h"
 #include "mcb/inst/address_of.h"
@@ -65,5 +64,7 @@ struct mcb_inst {
 };
 
 void mcb_destroy_inst(struct mcb_inst *inst);
+
+void mcb_output_inst(const struct mcb_inst *inst, FILE *stream);
 
 #endif

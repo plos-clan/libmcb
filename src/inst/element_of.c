@@ -1,6 +1,4 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #include <assert.h>
 #include <stdlib.h>
 #include "mcb/func.h"
@@ -21,6 +19,7 @@ mcb_inst_element_of(
 	struct mcb_inst *inst;
 	if (!result || !container || !idx || !fn)
 		ereturn(1, "!result || !container || !idx || !fn");
+
 	inst = ecalloc(1, sizeof(*inst));
 	inst->kind = MCB_ELEMENT_OF_INST;
 	inst->inner.element_of.result    = result;
@@ -40,4 +39,17 @@ mcb_inst_element_of(
 err_free_inst:
 	free(inst);
 	return 1;
+}
+
+void
+mcb_output_element_of_inst(
+		const struct mcb_element_of_inst *inst,
+		FILE *stream)
+{
+	char *result_str = mcb_build_value_cstr(inst->result);
+	fprintf(stream, "%s = element_of %%%s, %%%s\n",
+			result_str,
+			inst->container->name,
+			inst->idx->name);
+	free(result_str);
 }

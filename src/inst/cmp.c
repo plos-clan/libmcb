@@ -1,6 +1,4 @@
-/* This file is part of libmcb.
-   SPDX-License-Identifier: LGPL-3.0-or-later
-*/
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -60,4 +58,15 @@ mcb_reverse_cmp_op(enum MCB_CMP_OPERATOR op)
 	}
 	eabort("reverse_cmp_op(): location that must not be reached");
 	return -1;
+}
+
+void
+mcb_output_cmp_inst(const struct mcb_cmp_inst *inst, FILE *stream)
+{
+	char *result_str = mcb_build_value_cstr(inst->result);
+	fprintf(stream, "%s = cmp %%%s, %%%s\n",
+			result_str,
+			inst->lhs->name,
+			inst->rhs->name);
+	free(result_str);
 }
