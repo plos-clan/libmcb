@@ -86,7 +86,7 @@ build_sub_inst(struct mcb_inst *inst_outer,
 	estr_clean(&ctx->buf);
 	len = snprintf(ctx->buf.s, ctx->buf.siz,
 			"sub%c %s, %s\n",
-			get_inst_suffix(lhs_val->kind),
+			get_inst_suffix(result->kind),
 			src.s, dst.s);
 	if (len < 0)
 		eabort("snprintf()");

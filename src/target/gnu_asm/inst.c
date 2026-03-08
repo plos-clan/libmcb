@@ -43,10 +43,10 @@ get_inst_suffix(enum GNU_ASM_VALUE_KIND dst_kind)
 	switch (dst_kind) {
 	case UNKOWN_VALUE:
 		return '\0';
-	CASE_I8_VALUE:  return 'b';
-	CASE_I16_VALUE: return 'w';
-	CASE_I32_VALUE: return 'l';
-	CASE_I64_VALUE: return 'q';
+	CASE_I8_VALUE:  CASE_U8_VALUE:  return 'b';
+	CASE_I16_VALUE: CASE_U16_VALUE: return 'w';
+	CASE_I32_VALUE: CASE_U32_VALUE: return 'l';
+	CASE_I64_VALUE: CASE_U64_VALUE: return 'q';
 	case CMP_RESULT_VALUE:
 		eabort("unexpected dst_kind 'CMP_RESULT_VALUE'");
 		break;

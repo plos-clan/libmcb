@@ -118,20 +118,22 @@ clean_rdx(struct gnu_asm_value *rem,
 		struct mcb_func *fn,
 		struct gnu_asm *ctx)
 {
+	struct text_block *blk;
 	struct gnu_asm_func *gfn;
-	enum GNU_ASM_REG r;
 	assert(fn && fn->data);
 	gfn = fn->data;
-	if (!gfn->allocated_reg[RDX])
-		return;
+	if (gfn->allocated_reg[RDX]) {
+		if (mov_reg_user(RDX, fn, ctx))
+			eabort("mov_reg_user()");
+		drop_reg(RDX, fn);
+	}
 
-	if (mov_reg_user(RDX, fn, ctx))
-		eabort("mov_reg_user()");
-	drop_reg(RDX, fn);
-
-	r = alloc_reg(RDX, rem, fn);
-	assert(r == RDX);
-	estr_clean(&ctx->buf);
+	rem->kind = map_type_to_value_kind(
+			I8_REG_VALUE,
+			rem->container->type);
+	rem->inner.reg = alloc_reg(RDX, rem, fn);
+	blk = text_block_from_cstr("xor %rdx, %rdx\n");
+	append_text_block(&ctx->text, blk);
 }
 
 int
@@ -217,6 +219,7 @@ build_div_inst(struct mcb_inst *inst_outer,
 		return 1;
 
 	rem = ecalloc(1, sizeof(*rem));
+	rem->container = inst->rem;
 	clean_rax(lhs_val, fn, ctx);
 	clean_rdx(rem, fn, ctx);
 

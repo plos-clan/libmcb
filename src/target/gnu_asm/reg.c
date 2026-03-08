@@ -79,10 +79,10 @@ reg_offset_from_kind(enum GNU_ASM_VALUE_KIND kind)
 {
 	switch (kind) {
 	case UNKOWN_VALUE: return -1;
-	CASE_I8_VALUE:     return 3;
-	CASE_I16_VALUE:    return 2;
-	CASE_I32_VALUE:    return 1;
-	CASE_I64_VALUE:    return 0;
+	CASE_I8_VALUE:  CASE_U8_VALUE:   return 3;
+	CASE_I16_VALUE: CASE_U16_VALUE:  return 2;
+	CASE_I32_VALUE: CASE_U32_VALUE:  return 1;
+	CASE_I64_VALUE: CASE_U64_VALUE:  return 0;
 	case CMP_RESULT_VALUE:
 		eabort("unexpected dst_kind 'CMP_RESULT_VALUE'");
 		break;
