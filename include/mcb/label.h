@@ -30,7 +30,7 @@ bool mcb_can_define_label(const struct mcb_func *fn,
  *     named by counter's number inside [fn] */
 struct mcb_label *mcb_define_label(const char *name, struct mcb_func *fn);
 
-void mcb_destroy_label(struct mcb_label *l);
+void mcb_free_label(struct mcb_label *l);
 
 void mcb_output_label(const struct mcb_label *l, FILE *stream);
 

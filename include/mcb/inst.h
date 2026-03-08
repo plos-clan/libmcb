@@ -63,7 +63,7 @@ struct mcb_inst {
 	} inner;
 };
 
-void mcb_destroy_inst(struct mcb_inst *inst);
+void mcb_free_inst(struct mcb_inst *inst);
 
 void mcb_output_inst(const struct mcb_inst *inst, FILE *stream);
 

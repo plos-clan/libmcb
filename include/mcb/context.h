@@ -3,7 +3,10 @@
 #define LIBMCB_CONTEXT_H
 #include <stdio.h>
 #include <stddef.h>
-#include "mcb/func.h"
+
+struct mcb_func;
+struct mcb_struct;
+struct mcb_type;
 
 struct mcb_context {
 	struct mcb_func **fn_arr;
@@ -11,10 +14,13 @@ struct mcb_context {
 
 	struct mcb_struct **struct_arr;
 	size_t struct_arr_count;
+
+	struct mcb_type **defined_types;
+	size_t defined_types_count;
 };
 
-int mcb_define_context(struct mcb_context *ctx);
-void mcb_destroy_context(struct mcb_context *ctx);
+struct mcb_context *mcb_define_context(void);
+void mcb_free_context(struct mcb_context *ctx);
 void mcb_output_context(const struct mcb_context *ctx, FILE *stream);
 
 #endif

@@ -31,6 +31,7 @@ alloc_elem(struct mcb_value *container, size_t idx, struct mcb_func *fn)
 	if (len < 0)
 		eabort("snprintf()");
 	elem = mcb_define_value(buf, container->type->inner, fn);
+	free(buf);
 
 	return elem;
 }

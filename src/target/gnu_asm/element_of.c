@@ -50,7 +50,7 @@ mov_idx_to_reg(
 	src = *idx;
 	idx = ecalloc(1, sizeof(*idx));
 	idx->kind = remap_value_kind(I8_REG_VALUE, src.kind);
-	idx->inner.reg = alloc_reg(AUTO_ALLOC_REG, idx, fn);
+	idx->inner.reg = alloc_reg(AUTO_ALLOC_REG, inst->idx->data, fn);
 	if (idx->inner.reg == REG_COUNT) {
 		if (mov_reg_user(AUTO_ALLOC_REG - 1, fn, ctx))
 			eabort("mov_reg_user()");

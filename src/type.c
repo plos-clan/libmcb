@@ -2,6 +2,8 @@
 #include <stddef.h>
 #include "mcb/type.h"
 
+#include "darr.h"
+#include "ealloc.h"
 #include "str.h"
 
 static const char *builtin_type_cstr[] = {
@@ -44,11 +46,26 @@ mcb_build_type_cstr(const struct mcb_type *type)
 	return s.s;
 }
 
-void
-mcb_destroy_type(struct mcb_type *type)
+struct mcb_type *
+mcb_define_type(struct mcb_context *ctx)
 {
+	struct mcb_type *type;
+	type = ecalloc(1, sizeof(*type));
+	darr_append(ctx->defined_types, ctx->defined_types_count, type);
+	return type;
+}
+
+void
+mcb_free_type(struct mcb_type *type)
+{
+	const struct mcb_type *builtin;
 	if (!type)
 		return;
+	builtin = mcb_get_type_from_builtin(type->builtin);
+	if (builtin)
+		return;
+	mcb_free_type(type->inner);
+	free(type);
 }
 
 const struct mcb_type *

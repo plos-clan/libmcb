@@ -222,6 +222,7 @@ build_div_inst(struct mcb_inst *inst_outer,
 	rem->container = inst->rem;
 	clean_rax(lhs_val, fn, ctx);
 	clean_rdx(rem, fn, ctx);
+	inst->rem->data = rem;
 
 	if (IS_REG(lhs_val->kind) &&
 			lhs_val->inner.reg == RAX &&
@@ -246,6 +247,8 @@ build_div_inst(struct mcb_inst *inst_outer,
 	ctx->buf.len = len;
 	blk = text_block_from_str(&ctx->buf);
 	append_text_block(&ctx->text, blk);
+
+	str_free(&src);
 
 	if (inst->lhs->scope_end == inst_outer)
 		drop_value(inst->lhs, fn);

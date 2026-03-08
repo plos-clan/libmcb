@@ -48,7 +48,7 @@ struct mcb_func *mcb_define_func(
 
 int mcb_append_func_arg(struct mcb_value *val, struct mcb_func *fn);
 
-void mcb_destroy_func(struct mcb_func *fn);
+void mcb_free_func(struct mcb_func *fn);
 
 void mcb_output_func(const struct mcb_func *fn, FILE *stream);
 

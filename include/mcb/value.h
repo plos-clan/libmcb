@@ -63,6 +63,6 @@ struct mcb_value *mcb_define_value(
 		const struct mcb_type *type,
 		struct mcb_func *fn);
 
-void mcb_destroy_value(struct mcb_value *val);
+void mcb_free_value(struct mcb_value *val);
 
 #endif

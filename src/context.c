@@ -6,25 +6,28 @@
 #include "mcb/func.h"
 #include "mcb/struct.h"
 
-int
-mcb_define_context(struct mcb_context *ctx)
+#include "ealloc.h"
+
+struct mcb_context *
+mcb_define_context(void)
 {
-	if (!ctx)
-		return 1;
-	memset(ctx, 0, sizeof(*ctx));
-	return 0;
+	struct mcb_context *ctx = ecalloc(1, sizeof(*ctx));
+	return ctx;
 }
 
 void
-mcb_destroy_context(struct mcb_context *ctx)
+mcb_free_context(struct mcb_context *ctx)
 {
 	if (!ctx)
 		return;
 	for (size_t i = 0; i < ctx->fn_arr_count; i++)
-		mcb_destroy_func(ctx->fn_arr[i]);
+		mcb_free_func(ctx->fn_arr[i]);
+	for (size_t i = 0; i < ctx->defined_types_count; i++)
+		mcb_free_type(ctx->defined_types[i]);
 	free(ctx->fn_arr);
-
 	free(ctx->struct_arr);
+	free(ctx->defined_types);
+	free(ctx);
 }
 
 void

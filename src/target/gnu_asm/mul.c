@@ -195,6 +195,8 @@ build_mul_inst(struct mcb_inst *inst_outer,
 	blk = text_block_from_str(&ctx->buf);
 	append_text_block(&ctx->text, blk);
 
+	str_free(&src);
+
 	if (inst->lhs->scope_end == inst_outer)
 		drop_value(inst->lhs, fn);
 	if (inst->rhs->scope_end == inst_outer)

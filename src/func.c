@@ -45,22 +45,22 @@ mcb_append_func_arg(struct mcb_value *val, struct mcb_func *fn)
 }
 
 void
-mcb_destroy_func(struct mcb_func *fn)
+mcb_free_func(struct mcb_func *fn)
 {
 	if (!fn)
 		return;
 	free(fn->args);
 
 	for (size_t i = 0; i < fn->inst_arr_count; i++)
-		mcb_destroy_inst(fn->inst_arr[i]);
+		mcb_free_inst(fn->inst_arr[i]);
 	free(fn->inst_arr);
 
 	for (size_t i = 0; i < fn->label_arr_count; i++)
-		mcb_destroy_label(fn->label_arr[i]);
+		mcb_free_label(fn->label_arr[i]);
 	free(fn->label_arr);
 
 	for (size_t i = 0; i < fn->value_arr_count; i++)
-		mcb_destroy_value(fn->value_arr[i]);
+		mcb_free_value(fn->value_arr[i]);
 	free(fn->value_arr);
 
 	free(fn->name);

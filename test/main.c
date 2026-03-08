@@ -45,19 +45,19 @@ define_main_fn(struct mcb_context *ctx)
 int
 main(void)
 {
-	struct mcb_context ctx;
-	mcb_define_context(&ctx);
+	struct mcb_context *ctx;
+	ctx = mcb_define_context();
 
-	define_main_fn(&ctx);
+	define_main_fn(ctx);
 
 	// FILE *fp = fopen("/tmp/libmcb_out.s", "w");
 
 	/* output */
-	if (mcb_target_gnu_asm(stdout, &ctx))
+	if (mcb_target_gnu_asm(stdout, ctx))
 		return 1;
 
 	// fclose(fp);
 
-	mcb_destroy_context(&ctx);
+	mcb_free_context(ctx);
 	return 0;
 }
