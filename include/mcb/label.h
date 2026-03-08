@@ -14,13 +14,21 @@ struct mcb_label {
 	struct mcb_inst *beg;
 };
 
+/* Append label to [fn] after the last instruction. */
 int mcb_append_label(struct mcb_label *label, struct mcb_func *fn);
 
 bool mcb_can_define_label(const struct mcb_func *fn,
 		size_t label_idx,
 		size_t inst_idx);
 
-struct mcb_label *mcb_define_label(const char *name);
+/* Define a label to use. But it won't be appended to [fn].
+ * If you want to append this label and really use it,
+ * see mcb_append_label().
+ *
+ * @param [name]: NULL | name:
+ *     When you passed NULL to [name], the label will auto
+ *     named by counter's number inside [fn] */
+struct mcb_label *mcb_define_label(const char *name, struct mcb_func *fn);
 
 void mcb_destroy_label(struct mcb_label *l);
 

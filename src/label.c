@@ -9,6 +9,21 @@
 #include "ealloc.h"
 #include "err.h"
 
+static char *auto_name(struct mcb_func *fn);
+
+char *
+auto_name(struct mcb_func *fn)
+{
+	char *name;
+	assert(fn);
+
+	name = ecalloc(32, sizeof(*name));
+	snprintf(name, 32, "%lu", fn->label_auto_named);
+	fn->label_auto_named++;
+
+	return name;
+}
+
 int
 mcb_append_label(struct mcb_label *label, struct mcb_func *fn)
 {
@@ -33,15 +48,20 @@ mcb_can_define_label(const struct mcb_func *fn,
 }
 
 struct mcb_label *
-mcb_define_label(const char *name)
+mcb_define_label(const char *name, struct mcb_func *fn)
 {
 	struct mcb_label *l;
-	if (!name)
-		ereturn(NULL, "!name");
+	if (!fn)
+		ereturn(NULL, "!fn");
 	l = ecalloc(1, sizeof(*l));
-	l->name = strdup(name);
+
+	if (name)
+		l->name = strdup(name);
+	else
+		l->name = auto_name(fn);
 	if (!l->name)
 		goto err_free_l;
+
 	return l;
 err_free_l:
 	free(l);

@@ -53,6 +53,11 @@ struct mcb_value {
 
 char *mcb_build_value_cstr(const struct mcb_value *value);
 
+/* Define a value for the future to use.
+ *
+ * @param [name]: NULL | value name:
+ *     When you passed NULL to [name], the name will auto
+ *     named by counter's number inside the [fn]. */
 struct mcb_value *mcb_define_value(
 		const char *name,
 		const struct mcb_type *type,

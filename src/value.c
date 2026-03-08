@@ -51,13 +51,14 @@ mcb_define_value(const char *name,
 		ereturn(NULL, "!fn");
 	val = ecalloc(1, sizeof(*val));
 	val->kind = MCB_NORMAL_VALUE;
-	if (name) {
+
+	if (name)
 		val->name = strdup(name);
-		if (!val->name)
-			goto err_null_name;
-	} else {
+	else
 		val->name = auto_name(fn);
-	}
+	if (!val->name)
+		goto err_null_name;
+
 	val->type = type;
 	darr_append(fn->value_arr, fn->value_arr_count, val);
 	return val;

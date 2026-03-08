@@ -31,6 +31,7 @@ struct mcb_func {
 
 	struct mcb_label **label_arr;
 	size_t label_arr_count;
+	size_t label_auto_named;
 
 	struct mcb_value **value_arr;
 	size_t value_arr_count;
