@@ -27,12 +27,17 @@ struct gnu_asm_mem_obj {
 
 #ifdef LIBMCB_STRIP
 #define alloc_stack_mem mcb__gnu_asm_alloc_stack_mem
+#define drop_mem        mcb__gnu_asm_drop_mem
 #define str_from_mem    mcb__gnu_asm_str_from_mem
 #endif
 
 struct gnu_asm_mem_obj *mcb__gnu_asm_alloc_stack_mem(
 		int bytes,
 		struct gnu_asm_value *user,
+		struct mcb_func *fn);
+
+void mcb__gnu_asm_drop_mem(
+		struct gnu_asm_mem_obj *mem,
 		struct mcb_func *fn);
 
 struct str *mcb__gnu_asm_str_from_mem(

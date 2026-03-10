@@ -109,6 +109,11 @@ store_to_value(struct gnu_asm_value *val,
 	blk = text_block_from_str(&ctx->buf);
 	append_text_block(&ctx->text, blk);
 
+	if (inst->kind == MCB_STORE_VALUE) {
+		if (inst->operand.value->scope_end == inst_outer)
+			drop_value(inst->operand.value, fn);
+	}
+
 	return 0;
 }
 

@@ -47,8 +47,8 @@ mcb_define_value(const char *name,
 		struct mcb_func *fn)
 {
 	struct mcb_value *val;
-	if (!fn)
-		ereturn(NULL, "!fn");
+	if (!type || !fn)
+		ereturn(NULL, "!type || !fn");
 	val = ecalloc(1, sizeof(*val));
 	val->kind = MCB_NORMAL_VALUE;
 

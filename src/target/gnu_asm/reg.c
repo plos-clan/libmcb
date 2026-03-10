@@ -71,7 +71,7 @@ drop_reg(enum GNU_ASM_REG reg, struct mcb_func *fn)
 	struct gnu_asm_func *f;
 	assert(fn);
 	f = fn->data;
-	f->allocated_reg[reg] = false;
+	f->allocated_reg[reg] = NULL;
 }
 
 int

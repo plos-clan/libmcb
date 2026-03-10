@@ -16,6 +16,8 @@
 #include "struct.h"
 #include "value.h"
 
+#define UTILSH_CONTAINER_OF_STRIP
+#include "../../container_of.h"
 #include "../../ealloc.h"
 #include "../../err.h"
 #include "../../str.h"
@@ -95,6 +97,12 @@ address_of_struct(
 	result->inner.mem = mem;
 
 	gen_lea(dst.s, src.s, I64_REG_VALUE, ctx);
+
+	if (inst->val->scope_end == container_of(
+				inst,
+				struct mcb_inst,
+				inner.address_of))
+		drop_value(inst->val, fn);
 
 	str_free(&dst);
 	str_free(&src);

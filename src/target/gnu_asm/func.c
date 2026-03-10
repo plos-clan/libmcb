@@ -398,10 +398,10 @@ build_call_inst(struct mcb_inst *inst_outer,
 		push_arg(i, &call_ctx);
 
 	save_regs_before_call(&call_ctx);
-	if (inst->callee->syscall_num == 0) {
-		build_call(inst->callee, ctx);
-	} else {
+	if (inst->callee->syscall_num >= 0) {
 		build_syscall(&call_ctx);
+	} else {
+		build_call(inst->callee, ctx);
 	}
 
 	for (int i = 0; i < call_ctx.argc; i++)

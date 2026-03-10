@@ -89,12 +89,16 @@ mcb_inst_store_value(struct mcb_value *container,
 	struct mcb_inst *inst;
 	if (!container || !data || !fn)
 		ereturn(1, "!container || !data || !fn");
+	if (container->kind != MCB_VAR_VALUE)
+		ereturn(1, "container not a variable value");
 	inst = ecalloc(1, sizeof(*inst));
 	inst->kind = MCB_STORE_INST;
 	inst->inner.store.container = container;
 	inst->inner.store.kind = MCB_STORE_VALUE;
 	inst->inner.store.operand.value = data;
 	if (mcb_use_value(inst, container))
+		goto err_free_inst;
+	if (mcb_use_value(inst, data))
 		goto err_free_inst;
 	if (mcb_append_inst(inst, fn))
 		goto err_free_inst;

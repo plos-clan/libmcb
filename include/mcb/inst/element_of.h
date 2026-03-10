@@ -7,8 +7,8 @@
 
 struct mcb_element_of_inst {
 	struct mcb_value *result;
-	const struct mcb_value *container;
-	const struct mcb_value *idx;
+	struct mcb_value *container;
+	struct mcb_value *idx;
 };
 
 int mcb_inst_element_of(

@@ -78,6 +78,16 @@ alloc_stack_mem(int bytes,
 	return mem;
 }
 
+void
+drop_mem(struct gnu_asm_mem_obj *mem, struct mcb_func *fn)
+{
+	assert(mem && fn);
+	if (mem->scale != 0)
+		drop_reg(mem->index, fn);
+	if (mem->base != RBP)
+		drop_reg(mem->base, fn);
+}
+
 struct str *
 str_from_mem(struct str *s, const struct gnu_asm_value *v)
 {

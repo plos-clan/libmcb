@@ -52,8 +52,16 @@ drop_value_inner(struct gnu_asm_value *val, struct mcb_func *fn)
 	assert(fn);
 	if (!val)
 		return;
-	if (IS_REG(val->kind))
+	switch (val->kind) {
+	CASE_MEM_VALUE:
+		drop_mem(val->inner.mem, fn);
+		break;
+	CASE_REG_VALUE:
 		drop_reg(val->inner.reg, fn);
+		break;
+	default:
+		break;
+	}
 }
 
 enum GNU_ASM_VALUE_KIND
