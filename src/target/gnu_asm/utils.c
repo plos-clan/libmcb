@@ -99,6 +99,8 @@ mov_reg_user_to_mem(
 	user = f->using_reg[reg];
 	assert(user);
 
+	if (IS_MEM(user->kind))
+		return mov_mem_reg_user(reg, fn, ctx);
 	assert(IS_REG(user->kind));
 
 	src = *user;

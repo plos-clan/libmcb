@@ -219,7 +219,7 @@ clean_exit_points(struct gnu_asm_func *fn, struct gnu_asm *ctx)
 	assert(fn && ctx);
 
 	if (fn->exit_points_count == 1) {
-		restore_callee_saved_regs(fn->exit_points[0], fn, ctx);
+		restore_callee_saved_regs(fn->exit_points[0]->prv, fn, ctx);
 		return;
 	} else if (fn->exit_points_count == 0) {
 		return;
