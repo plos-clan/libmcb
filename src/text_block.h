@@ -31,6 +31,7 @@ struct text_block_root {
 #define destroy_text_block   mcb__destroy_text_block
 #define insert_text_block    mcb__insert_text_block
 #define init_text_block_root mcb__init_text_block_root
+#define remove_text_block    mcb__remove_text_block
 #define text_block_from_str  mcb__text_block_from_str
 #define text_block_from_cstr mcb__text_block_from_cstr
 #endif
@@ -38,19 +39,15 @@ struct text_block_root {
 void mcb__append_text_block(struct text_block_root *root,
 		struct text_block *blk);
 
-/**
- * Create a text block and allocate the size of `siz` to `str`.
- * @param siz: pass 0 will allocate 64 bytes with `calloc`.
- */
+/* Create a text block and allocate the size of [siz] to [str].
+ * @param siz: pass 0 will allocate 64 bytes with [calloc]. */
 struct text_block *mcb__create_text_block(size_t siz);
 
 void mcb__destroy_text_block(struct text_block *blk);
 
-/**
- * Insert `blk` between `b0` and `b1`.
+/** Insert [blk] between [b0] and [b1].
  * @param b0: mustn't be NULL.
- * @param b1: pass NULL will insert between `b0` and the next of `b0`.
- */
+ * @param b1: pass NULL will insert between [b0] and the next of [b0]. */
 void mcb__insert_text_block(
 		struct text_block_root *root,
 		struct text_block *prv,

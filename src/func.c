@@ -23,6 +23,7 @@ mcb_define_func(const char *name,
 		ereturn(NULL, "!name || !ctx");
 	fn = ecalloc(1, sizeof(*fn));
 	fn->name = strdup(name);
+	fn->syscall_num = -1;
 	if (!fn->name)
 		goto err_null_name;
 	fn->export_type = export_type;

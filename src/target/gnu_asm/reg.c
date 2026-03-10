@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 #include <assert.h>
+#include <stdbool.h>
 #define LIBMCB_STRIP
 #include "func.h"
 #include "reg.h"
@@ -41,15 +42,17 @@ alloc_reg(enum GNU_ASM_REG reg,
 	assert(f);
 
 	if (reg != AUTO_ALLOC_REG) {
-		if (f->allocated_reg[reg])
+		if (f->using_reg[reg])
 			return REG_COUNT;
-		f->allocated_reg[reg] = user;
+		f->allocated_reg[reg] = true;
+		f->using_reg[reg] = user;
 		return reg;
 	}
 
 	for (unsigned int i = 0; i < LENGTH(reg_alloc_priority); i++) {
-		if (!f->allocated_reg[reg_alloc_priority[i]]) {
-			f->allocated_reg[reg_alloc_priority[i]] = user;
+		if (!f->using_reg[reg_alloc_priority[i]]) {
+			f->allocated_reg[reg_alloc_priority[i]] = true;
+			f->using_reg[reg_alloc_priority[i]] = user;
 			return reg_alloc_priority[i];
 		}
 	}
@@ -71,7 +74,7 @@ drop_reg(enum GNU_ASM_REG reg, struct mcb_func *fn)
 	struct gnu_asm_func *f;
 	assert(fn);
 	f = fn->data;
-	f->allocated_reg[reg] = NULL;
+	f->using_reg[reg] = NULL;
 }
 
 int

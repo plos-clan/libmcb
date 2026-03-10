@@ -32,7 +32,7 @@ mov_mem_reg_user(
 	assert(fn && ctx);
 	f = fn->data;
 	assert(f);
-	user = f->allocated_reg[reg];
+	user = f->using_reg[reg];
 	assert(user);
 
 	src.kind = remap_value_kind(I8_REG_VALUE, user->kind);
@@ -62,7 +62,7 @@ mov_reg_user(enum GNU_ASM_REG reg, struct mcb_func *fn, struct gnu_asm *ctx)
 	assert(fn && ctx);
 	f = fn->data;
 	assert(f);
-	user = f->allocated_reg[reg];
+	user = f->using_reg[reg];
 	assert(user);
 
 	if (IS_MEM(user->kind))
@@ -96,7 +96,7 @@ mov_reg_user_to_mem(
 	assert(fn && ctx);
 	f = fn->data;
 	assert(f);
-	user = f->allocated_reg[reg];
+	user = f->using_reg[reg];
 	assert(user);
 
 	assert(IS_REG(user->kind));

@@ -10,7 +10,13 @@
 struct gnu_asm_func {
 	struct gnu_asm_mem_obj **allocated_mem;
 	int allocated_mem_count;
-	struct gnu_asm_value *allocated_reg[REG_COUNT];
+
+	bool allocated_reg[REG_COUNT];
+	struct gnu_asm_value *using_reg[REG_COUNT];
+
+	struct text_block **exit_points;
+	int exit_points_count;
+
 	struct text_block *beg_blk;
 };
 

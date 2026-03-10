@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "mcb/func.h"
 #include "mcb/inst/call.h"
 
@@ -42,6 +43,7 @@ static void build_syscall(struct func_call_context *ctx);
 static struct text_block *define_func_beg(struct mcb_func *fn, struct gnu_asm *ctx);
 static void define_func_end(struct mcb_func *fn, struct gnu_asm *ctx);
 static void drop_arg(int idx, struct func_call_context *ctx);
+static void clean_exit_points(struct gnu_asm_func *fn, struct gnu_asm *ctx);
 static void init_func_arg_value(int idx, struct mcb_func *fn);
 static bool is_arg_reg(
 		enum GNU_ASM_REG reg,
@@ -50,6 +52,11 @@ static bool is_arg_reg(
 static bool is_callee_save_reg(enum GNU_ASM_REG reg);
 static bool is_scope_end_at_call(enum GNU_ASM_REG reg, struct func_call_context *ctx);
 static void push_arg(int idx, struct func_call_context *ctx);
+static void restore_callee_saved_regs(
+		struct text_block *beg_blk,
+		struct gnu_asm_func *fn,
+		struct gnu_asm *ctx);
+static void save_callee_saved_regs(struct gnu_asm_func *fn, struct gnu_asm *ctx);
 static void save_regs_before_call(struct func_call_context *ctx);
 
 static const enum GNU_ASM_REG callee_save_regs[] = {
@@ -177,6 +184,9 @@ define_func_end(struct mcb_func *fn,
 	assert(f);
 
 	align_stack(f, ctx);
+	save_callee_saved_regs(f, ctx);
+
+	clean_exit_points(f, ctx);
 }
 
 void
@@ -199,6 +209,51 @@ drop_arg(int idx, struct func_call_context *ctx)
 
 	ctx->args[idx] = NULL;
 	free(val.data);
+}
+
+void
+clean_exit_points(struct gnu_asm_func *fn, struct gnu_asm *ctx)
+{
+	struct text_block *blk;
+	int len;
+	assert(fn && ctx);
+
+	if (fn->exit_points_count == 1) {
+		restore_callee_saved_regs(fn->exit_points[0], fn, ctx);
+		return;
+	} else if (fn->exit_points_count == 0) {
+		return;
+	}
+
+	estr_clean(&ctx->buf);
+	len = snprintf(ctx->buf.s, ctx->buf.siz,
+			".LR%lu:\n",
+			ctx->func_ret_cleaner_count);
+	if (len < 0)
+		eabort("snprintf()");
+	ctx->buf.len = len;
+	blk = text_block_from_str(&ctx->buf);
+
+	/* The [blk] is after the last exit points. */
+	for (int i = 0; i < fn->exit_points_count - 1; i++) {
+		estr_clean(&ctx->buf);
+		len = snprintf(ctx->buf.s, ctx->buf.siz,
+				"jmp .LR%lu\n",
+				ctx->func_ret_cleaner_count);
+		if (len < 0)
+			eabort("snprintf()");
+		estr_realloc(&fn->exit_points[i]->s, len + 1);
+		memcpy(fn->exit_points[i]->s.s, ctx->buf.s, len);
+		fn->exit_points[i]->s.len = len;
+	}
+
+	insert_text_block(&ctx->text,
+			fn->exit_points[fn->exit_points_count - 1]->prv,
+			fn->exit_points[fn->exit_points_count - 1],
+			blk);
+
+	restore_callee_saved_regs(blk, fn, ctx);
+	ctx->func_ret_cleaner_count++;
 }
 
 void
@@ -250,9 +305,9 @@ is_scope_end_at_call(enum GNU_ASM_REG reg, struct func_call_context *ctx)
 	assert(ctx->fn->args);
 	f = ctx->fn->data;
 	assert(f);
-	if (!f->allocated_reg[reg])
+	if (!f->using_reg[reg])
 		return true;
-	if (f->allocated_reg[reg]->container->scope_end == ctx->inst_outer)
+	if (f->using_reg[reg]->container->scope_end == ctx->inst_outer)
 		return true;
 	return false;
 }
@@ -299,6 +354,57 @@ push_arg(int idx, struct func_call_context *ctx)
 }
 
 void
+restore_callee_saved_regs(
+		struct text_block *exit_blk,
+		struct gnu_asm_func *fn,
+		struct gnu_asm *ctx)
+{
+	struct text_block *blk;
+	int count = 0, len;
+	assert(fn && ctx);
+	for (int i = 0; i < (int)LENGTH(callee_save_regs); i++) {
+		if (!fn->allocated_reg[callee_save_regs[i]])
+			continue;
+		count++;
+		estr_clean(&ctx->buf);
+		len = snprintf(ctx->buf.s, ctx->buf.siz, "movq %d(%%rbp), %s\n",
+				count * -8,
+				cstr_from_reg(callee_save_regs[i], 0));
+		if (len < 0)
+			eabort("snprintf()");
+		ctx->buf.len = len;
+		blk = text_block_from_str(&ctx->buf);
+		insert_text_block(&ctx->text,
+				exit_blk,
+				exit_blk->nex,
+				blk);
+	}
+}
+
+void
+save_callee_saved_regs(struct gnu_asm_func *fn, struct gnu_asm *ctx)
+{
+	struct text_block *blk;
+	int len;
+	assert(fn && ctx);
+	for (int i = 0; i < (int)LENGTH(callee_save_regs); i++) {
+		if (!fn->allocated_reg[callee_save_regs[i]])
+			continue;
+		estr_clean(&ctx->buf);
+		len = snprintf(ctx->buf.s, ctx->buf.siz, "pushq %s\n",
+				cstr_from_reg(callee_save_regs[i], 0));
+		if (len < 0)
+			eabort("snprintf()");
+		ctx->buf.len = len;
+		blk = text_block_from_str(&ctx->buf);
+		insert_text_block(&ctx->text,
+				fn->beg_blk,
+				fn->beg_blk->nex,
+				blk);
+	}
+}
+
+void
 save_regs_before_call(struct func_call_context *ctx)
 {
 	struct gnu_asm_func *f;
@@ -315,7 +421,7 @@ save_regs_before_call(struct func_call_context *ctx)
 	for (int i = 0; i < REG_COUNT; i++) {
 		if (i == RAX || i == RBP || i == RSP)
 			continue;
-		if (!f->allocated_reg[i])
+		if (!f->using_reg[i])
 			continue;
 		if (is_callee_save_reg(i))
 			continue;

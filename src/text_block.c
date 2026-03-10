@@ -91,7 +91,7 @@ text_block_from_str(struct str *s)
 }
 
 struct text_block *
-mcb__text_block_from_cstr(const char *s)
+text_block_from_cstr(const char *s)
 {
 	assert(s);
 	struct text_block *blk = ecalloc(1, sizeof(*blk));
