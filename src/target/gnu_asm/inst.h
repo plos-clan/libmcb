@@ -25,6 +25,8 @@
 #define build_branch_inst    mcb__gnu_asm_build_branch_inst /* branch.c */
 #define build_call_inst      mcb__gnu_asm_build_call_inst   /* func.c   */
 #define build_cmp_inst       mcb__gnu_asm_build_cmp_inst    /* cmp.c    */
+#define build_define_label_inst \
+	mcb__gnu_asm_build_define_label_inst         /*         label.c */
 #define build_div_inst       mcb__gnu_asm_build_div_inst    /* div.c    */
 
 #define build_element_of_inst \
@@ -69,6 +71,10 @@ int mcb__gnu_asm_build_call_inst(struct mcb_inst *inst_outer,
 		struct gnu_asm *ctx);
 
 int mcb__gnu_asm_build_cmp_inst(struct mcb_inst *inst_outer,
+		struct mcb_func *fn,
+		struct gnu_asm *ctx);
+
+int mcb__gnu_asm_build_define_label_inst(struct mcb_inst *inst_outer,
 		struct mcb_func *fn,
 		struct gnu_asm *ctx);
 

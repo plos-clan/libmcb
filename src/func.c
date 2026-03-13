@@ -72,12 +72,6 @@ void
 mcb_output_func(const struct mcb_func *fn, FILE *stream)
 {
 	fprintf(stream, "fn %s():\n", fn->name);
-	for (size_t i = 0, label_i = 0; i < fn->inst_arr_count; i++) {
-		if (mcb_can_define_label(fn, label_i, i)) {
-			mcb_output_label(fn->label_arr[label_i], stream);
-			label_i++;
-		}
-
+	for (size_t i = 0; i < fn->inst_arr_count; i++)
 		mcb_output_inst(fn->inst_arr[i], stream);
-	}
 }

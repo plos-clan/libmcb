@@ -22,7 +22,8 @@ mcb_free_inst(struct mcb_inst *inst)
 void
 mcb_output_inst(const struct mcb_inst *inst, FILE *stream)
 {
-	fputc('\t', stream);
+	if (inst->kind != MCB_DEFINE_LABEL_INST)
+		fputc('\t', stream);
 	switch (inst->kind) {
 	case MCB_ADD_INST:
 		mcb_output_add_inst(&inst->inner.add, stream);
@@ -49,6 +50,11 @@ mcb_output_inst(const struct mcb_inst *inst, FILE *stream)
 		break;
 	case MCB_CMP_INST:
 		mcb_output_cmp_inst(&inst->inner.cmp, stream);
+		break;
+	case MCB_DEFINE_LABEL_INST:
+		mcb_output_define_label_inst(
+				&inst->inner.define_label,
+				stream);
 		break;
 	case MCB_DIV_INST:
 		mcb_output_div_inst(&inst->inner.div, stream);

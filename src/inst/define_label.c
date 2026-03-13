@@ -2,22 +2,23 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "mcb/func.h"
-#include "mcb/inst/jmp.h"
+#include "mcb/inst/define_label.h"
 #include "mcb/label.h"
+#include "mcb/value.h"
 #include "utils.h"
 
 #include "../ealloc.h"
 #include "../err.h"
 
 int
-mcb_inst_jmp(struct mcb_label *label, struct mcb_func *fn)
+mcb_inst_define_label(struct mcb_label *label, struct mcb_func *fn)
 {
 	struct mcb_inst *inst;
 	if (!label || !fn)
 		ereturn(1, "!label || !fn");
 	inst = ecalloc(1, sizeof(*inst));
-	inst->kind = MCB_JMP_INST;
-	inst->inner.jmp.label = label;
+	inst->kind = MCB_DEFINE_LABEL_INST;
+	inst->inner.define_label.label = label;
 	if (mcb_append_inst(inst, fn))
 		goto err_free_inst;
 	return 0;
@@ -27,7 +28,9 @@ err_free_inst:
 }
 
 void
-mcb_output_jmp_inst(const struct mcb_jmp_inst *inst, FILE *stream)
+mcb_output_define_label_inst(
+		const struct mcb_define_label_inst *inst,
+		FILE *stream)
 {
-	fprintf(stream, "jmp @%s\n", inst->label->name);
+	fprintf(stream, "@%s:\n", inst->label->name);
 }

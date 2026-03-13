@@ -37,7 +37,7 @@ err_free_inst:
 void
 mcb_output_branch_inst(const struct mcb_branch_inst *inst, FILE *stream)
 {
-	fprintf(stream, "branch %%%s, %%%s, %%%s\n",
+	fprintf(stream, "branch %%%s, @%s, @%s\n",
 			inst->cmp_result->name,
 			inst->on_true->name,
 			inst->on_false->name);

@@ -452,12 +452,7 @@ define_func(struct mcb_func *fn, struct gnu_asm *ctx)
 	f = fn->data;
 	assert(f);
 	f->beg_blk = beg_blk;
-	for (size_t i = 0, label_i = 0; i < fn->inst_arr_count; i++) {
-		if (mcb_can_define_label(fn, label_i, i)) {
-			define_label(fn->label_arr[label_i], fn, ctx);
-			label_i++;
-		}
-
+	for (size_t i = 0; i < fn->inst_arr_count; i++) {
 		if (build_inst(fn->inst_arr[i], fn, ctx))
 			return 1;
 	}

@@ -24,31 +24,8 @@ auto_name(struct mcb_func *fn)
 	return name;
 }
 
-int
-mcb_append_label(struct mcb_label *label, struct mcb_func *fn)
-{
-	if (!label || !fn)
-		ereturn(1, "!label || !fn");
-	darr_append(fn->label_arr, fn->label_arr_count, label);
-	return 0;
-}
-
-bool
-mcb_can_define_label(const struct mcb_func *fn,
-		size_t label_idx,
-		size_t inst_idx)
-{
-	if (!fn->label_arr)
-		return false;
-	if (label_idx >= fn->label_arr_count)
-		return false;
-	if (fn->label_arr[label_idx]->beg == fn->inst_arr[inst_idx])
-		return true;
-	return false;
-}
-
 struct mcb_label *
-mcb_define_label(const char *name, struct mcb_func *fn)
+mcb_declare_label(const char *name, struct mcb_func *fn)
 {
 	struct mcb_label *l;
 	if (!fn)
@@ -82,5 +59,5 @@ mcb_output_label(const struct mcb_label *l, FILE *stream)
 {
 	if (!l)
 		return;
-	fprintf(stream, "%s:\n", l->name);
+	fprintf(stream, "@%s:\n", l->name);
 }
