@@ -39,6 +39,7 @@ mcb_declare_label(const char *name, struct mcb_func *fn)
 	if (!l->name)
 		goto err_free_l;
 
+	darr_append(fn->label_arr, fn->label_arr_count, l);
 	return l;
 err_free_l:
 	free(l);

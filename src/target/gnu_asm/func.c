@@ -519,6 +519,7 @@ destroy_func(struct mcb_func *container)
 	for (size_t i = 0; i < container->value_arr_count; i++)
 		destroy_value(container->value_arr[i]);
 	free(fn->allocated_mem);
+	free(fn->exit_points);
 	free(fn);
 	container->data = NULL;
 }
