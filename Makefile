@@ -1,5 +1,16 @@
 include config.mk
 
+SILENT =
+
+ifeq ($(strip $(SILENT)),)
+	E = @echo
+	Q = @
+else
+	E = @\#
+	Q =
+endif
+export E Q
+
 HEADER_DIR = $(PREFIX)/include
 TARGET_DIR = $(PREFIX)/lib
 
@@ -21,23 +32,19 @@ all: $(TARGET)
 include tool.mk
 
 $(OBJ_DIRS):
-	mkdir -p $@
+	$(Q) mkdir -p $@
 
 $(BUILD_DIR)/%.o: %.c | $(OBJ_DIRS)
-	@echo "  CC    " $@
-	@$(CC_CMD) -MMD
+	$(E) "  CC    " $@
+	$(Q) $(CC_CMD) -MMD
 
 $(TARGET): $(OBJ)
-	@echo "  AR    " $@
-	@$(AR) -rcs $@ $(OBJ) $(CLIBS)
-
-$(TOOLS): $(addsuffix .o,$(TOOLS))
-	@echo "  TOOL  " $@
-	@$(CC) -g3 -o $@ $<
+	$(E) "  AR    " $@
+	$(Q) $(AR) -rcs $@ $(OBJ) $(CLIBS)
 
 clean: clean-gen
-	@echo "  CLEAN"
-	@rm -f $(OBJ) $(TARGET) test/main
+	$(E) "  CLEAN"
+	$(Q) rm -f $(OBJ) $(TARGET) test/main
 
 clean-all: clean clean-tool
 
@@ -59,5 +66,5 @@ include gen.mk
 
 test: test/main
 test/main: test/main.c $(TARGET)
-	@echo "  CC    " $@
-	@$(CC) $(CFLAGS) -g3 -o $@ $^
+	$(E) "  CC    " $@
+	$(Q) $(CC) $(CFLAGS) -g3 -o $@ $^
