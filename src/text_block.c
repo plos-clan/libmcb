@@ -2,16 +2,16 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-
 #define LIBMCB_STRIP
+#include "mcb/str.h"
+#include "mcb/text_block.h"
+
 #include "ealloc.h"
-#include "str.h"
-#include "text_block.h"
 
 void
-append_text_block(
-		struct text_block_root *root,
-		struct text_block *blk)
+mcb_append_text_block(
+		struct mcb_text_block_root *root,
+		struct mcb_text_block *blk)
 {
 	assert(root && blk);
 	blk->nex = NULL;
@@ -24,10 +24,10 @@ append_text_block(
 	root->end = blk;
 }
 
-struct text_block *
-create_text_block(size_t siz)
+struct mcb_text_block *
+mcb_create_text_block(size_t siz)
 {
-	struct text_block *res = ecalloc(1, sizeof(*res));
+	struct mcb_text_block *res = ecalloc(1, sizeof(*res));
 	if (siz == 0)
 		siz = DEFAULT_TEXT_BLOCK_STR_SIZ;
 	estr_realloc(&res->s, siz);
@@ -35,7 +35,7 @@ create_text_block(size_t siz)
 }
 
 void
-destroy_text_block(struct text_block *blk)
+mcb_destroy_text_block(struct mcb_text_block *blk)
 {
 	if (!blk)
 		return;
@@ -44,11 +44,11 @@ destroy_text_block(struct text_block *blk)
 }
 
 void
-insert_text_block(
-		struct text_block_root *root,
-		struct text_block *prv,
-		struct text_block *nex,
-		struct text_block *cur)
+mcb_insert_text_block(
+		struct mcb_text_block_root *root,
+		struct mcb_text_block *prv,
+		struct mcb_text_block *nex,
+		struct mcb_text_block *cur)
 {
 	assert(root && prv && cur);
 
@@ -74,27 +74,27 @@ insert_text_block(
 }
 
 void
-init_text_block_root(struct text_block_root *root)
+mcb_init_text_block_root(struct mcb_text_block_root *root)
 {
 	assert(root);
 	root->beg = NULL;
 	root->end = NULL;
 }
 
-struct text_block *
-text_block_from_str(struct str *s)
+struct mcb_text_block *
+mcb_text_block_from_str(struct str *s)
 {
 	assert(s);
-	struct text_block *blk = ecalloc(1, sizeof(*blk));
+	struct mcb_text_block *blk = ecalloc(1, sizeof(*blk));
 	estr_from_cstr(&blk->s, s->s);
 	return blk;
 }
 
-struct text_block *
-text_block_from_cstr(const char *s)
+struct mcb_text_block *
+mcb_text_block_from_cstr(const char *s)
 {
 	assert(s);
-	struct text_block *blk = ecalloc(1, sizeof(*blk));
+	struct mcb_text_block *blk = ecalloc(1, sizeof(*blk));
 	estr_from_cstr(&blk->s, s);
 	return blk;
 }

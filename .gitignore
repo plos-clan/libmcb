@@ -4,3 +4,5 @@ libmcb.a
 Session.vim
 test/main
 .cache
+
+*.def.h

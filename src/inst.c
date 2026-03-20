@@ -1,84 +1,49 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
-#include <stdio.h>
+#include <assert.h>
 #include <stdlib.h>
-#include <string.h>
+#include "mcb/blk.h"
 #include "mcb/inst.h"
+#include "mcb/val.h"
+
+#include "darr.h"
+#include "ealloc.h"
+#include "err.h"
+
+static void
+append_inst(struct mcb_blk *blk, struct mcb_inst *inst)
+{
+	assert(blk && inst);
+	darr_append(blk->insts, blk->ninst, inst);
+	mcb_use_val(inst->arg[0], inst);
+	mcb_use_val(inst->arg[1], inst);
+	mcb_use_val(inst->dst, inst);
+}
 
 void
 mcb_free_inst(struct mcb_inst *inst)
 {
 	if (!inst)
 		return;
-	switch (inst->kind) {
-	case MCB_CALL_INST:
-		free(inst->inner.call.args);
-		break;
-	default:
-		break;
-	}
 	free(inst);
 }
 
-void
-mcb_output_inst(const struct mcb_inst *inst, FILE *stream)
+int
+mcb_inst(struct mcb_blk *blk,
+		enum MCB_INST_OP op,
+		uint64_t arg0_typ, struct mcb_val *arg0,
+		uint64_t arg1_typ, struct mcb_val *arg1,
+		uint64_t dst_typ, struct mcb_val *dst)
 {
-	if (inst->kind != MCB_DEFINE_LABEL_INST)
-		fputc('\t', stream);
-	switch (inst->kind) {
-	case MCB_ADD_INST:
-		mcb_output_add_inst(&inst->inner.add, stream);
-		break;
-	case MCB_ADDRESS_OF_INST:
-		mcb_output_address_of_inst(&inst->inner.address_of, stream);
-		break;
-	case MCB_ALLOC_ARRAY_INST:
-		mcb_output_alloc_array_inst(
-				&inst->inner.alloc_array, stream);
-		break;
-	case MCB_ALLOC_STRUCT_INST:
-		mcb_output_alloc_struct_inst(
-				&inst->inner.alloc_struct, stream);
-		break;
-	case MCB_ALLOC_VAR_INST:
-		mcb_output_alloc_var_inst(&inst->inner.alloc_var, stream);
-		break;
-	case MCB_BRANCH_INST:
-		mcb_output_branch_inst(&inst->inner.branch, stream);
-		break;
-	case MCB_CALL_INST:
-		mcb_output_call_inst(&inst->inner.call, stream);
-		break;
-	case MCB_CMP_INST:
-		mcb_output_cmp_inst(&inst->inner.cmp, stream);
-		break;
-	case MCB_DEFINE_LABEL_INST:
-		mcb_output_define_label_inst(
-				&inst->inner.define_label,
-				stream);
-		break;
-	case MCB_DIV_INST:
-		mcb_output_div_inst(&inst->inner.div, stream);
-		break;
-	case MCB_ELEMENT_OF_INST:
-		mcb_output_element_of_inst(&inst->inner.element_of, stream);
-		break;
-	case MCB_JMP_INST:
-		mcb_output_jmp_inst(&inst->inner.jmp, stream);
-		break;
-	case MCB_LOAD_INST:
-		mcb_output_load_inst(&inst->inner.load, stream);
-		break;
-	case MCB_MUL_INST:
-		mcb_output_mul_inst(&inst->inner.mul, stream);
-		break;
-	case MCB_RET_INST:
-		mcb_output_ret_inst(&inst->inner.ret, stream);
-		break;
-	case MCB_STORE_INST:
-		mcb_output_store_inst(&inst->inner.store, stream);
-		break;
-	case MCB_SUB_INST:
-		mcb_output_sub_inst(&inst->inner.sub, stream);
-		break;
-	}
+	struct mcb_inst *inst;
+	assert(blk && arg0 && arg1 && dst);
+	inst = ecalloc(1, sizeof(*inst));
+	inst->op = op;
+	inst->typ[0] = arg0_typ;
+	inst->typ[1] = arg1_typ;
+	inst->typ[2] = dst_typ;
+	inst->arg[0] = arg0;
+	inst->arg[1] = arg1;
+	inst->dst = dst;
+	append_inst(blk, inst);
+	return 0;
 }

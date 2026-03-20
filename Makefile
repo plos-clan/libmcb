@@ -8,7 +8,7 @@ BUILD_DIR = build
 HEADER = mcb
 TARGET = libmcb.a
 
-SUB_DIRS = src src/inst src/target src/target/gnu_asm
+SUB_DIRS = src src/amd64
 SRC = $(wildcard *.c $(addsuffix /*.c,$(SUB_DIRS)))
 OBJ = $(addprefix $(BUILD_DIR)/,$(SRC:.c=.o))
 OBJ_DIRS = $(BUILD_DIR) $(addprefix $(BUILD_DIR)/,$(SUB_DIRS))
@@ -17,6 +17,8 @@ OBJ_DEPS = $(addprefix $(BUILD_DIR)/,$(SRC:.c=.d))
 CC_CMD = $(CC) $(CFLAGS) -g3 -c -o $@ $<
 
 all: $(TARGET)
+
+include tool.mk
 
 $(OBJ_DIRS):
 	mkdir -p $@
@@ -29,10 +31,15 @@ $(TARGET): $(OBJ)
 	@echo "  AR    " $@
 	@$(AR) -rcs $@ $(OBJ) $(CLIBS)
 
-clean:
+$(TOOLS): $(addsuffix .o,$(TOOLS))
+	@echo "  TOOL  " $@
+	@$(CC) -g3 -o $@ $<
+
+clean: clean-gen
 	@echo "  CLEAN"
-	@rm -f $(OBJ) $(TARGET)
-	@rm -f test/main
+	@rm -f $(OBJ) $(TARGET) test/main
+
+clean-all: clean clean-tool
 
 install: $(TARGET)
 	mkdir -p $(HEADER_DIR) $(TARGET_DIR)
@@ -48,8 +55,7 @@ ifeq (,$(filter clean,$(MAKECMDGOALS)))
 -include $(OBJ_DEPS)
 endif
 
-.PHONY: all clean install uninstall
-.PHONY: test
+include gen.mk
 
 test: test/main
 test/main: test/main.c $(TARGET)
