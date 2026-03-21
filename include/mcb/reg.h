@@ -8,7 +8,10 @@ struct mcb_val;
 int mcb_alloc_reg(
 		int expect,
 		int nreg,
+		const int *in,
 		struct mcb_val *user,
 		struct mcb_blk *blk);
+
+struct mcb_val *mcb_drop_reg(int reg, struct mcb_blk *blk);
 
 #endif

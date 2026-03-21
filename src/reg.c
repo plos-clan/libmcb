@@ -1,19 +1,20 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 #include <assert.h>
+#include <stddef.h>
 #include "mcb/blk.h"
 #include "mcb/reg.h"
 
 static int
-auto_alloc_reg(int nreg, struct mcb_val *user, struct mcb_blk *blk)
+auto_alloc_reg(int nreg, const int *in, struct mcb_val *user, struct mcb_blk *blk)
 {
-	assert(nreg && user && blk);
+	assert(nreg && in && user && blk);
 	assert(blk->using_regs);
 
-	for (int i = 0; i < nreg; i++) {
-		if (!blk->using_regs[i]) {
-			blk->allocated_regs[i] = true;
-			blk->using_regs[i] = user;
-			return i;
+	for (const int *c = in; *c; c++) {
+		if (!blk->using_regs[*c]) {
+			blk->allocated_regs[*c] = true;
+			blk->using_regs[*c] = user;
+			return *c;
 		}
 	}
 
@@ -21,15 +22,25 @@ auto_alloc_reg(int nreg, struct mcb_val *user, struct mcb_blk *blk)
 }
 
 int
-mcb_alloc_reg(int expect, int nreg, struct mcb_val *user, struct mcb_blk *blk)
+mcb_alloc_reg(int expect, int nreg, const int *in, struct mcb_val *user, struct mcb_blk *blk)
 {
 	assert(nreg && user && blk);
 	assert(blk->using_regs);
 
 	if (expect == nreg)
-		return auto_alloc_reg(nreg, user, blk);
+		return auto_alloc_reg(nreg, in, user, blk);
 
 	//TODO: expect
 
 	return nreg;
+}
+
+struct mcb_val *
+mcb_drop_reg(int reg, struct mcb_blk *blk)
+{
+	struct mcb_val *user;
+	assert(blk && blk->using_regs);
+	user = blk->using_regs[reg];
+	blk->using_regs[reg] = NULL;
+	return user;
 }

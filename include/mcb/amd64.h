@@ -20,6 +20,8 @@ struct mcb_amd64_ctx {
 	uint64_t nrodata;
 };
 
-int mcb_amd64_build(struct mcb_ctx *ctx);
+struct mcb_amd64_ctx *mcb_amd64_build(struct mcb_ctx *ctx);
+void mcb_amd64_free_ctx(struct mcb_amd64_ctx *ctx);
+void mcb_amd64_output(FILE *to, const struct mcb_amd64_ctx *ctx);
 
 #endif

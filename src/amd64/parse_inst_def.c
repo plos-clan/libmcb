@@ -6,10 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct variant {
-	unsigned int src0:12, src1:8, dst:8;
-	int reg[3];
-};
+#include "inst.h"
 
 static char lbuf[BUFSIZ]; /* line buffer */
 
@@ -17,24 +14,26 @@ static FILE *in, *out;
 
 #define X "%d,%d,%d,%d"
 static const char *inst_variants_template[] = {
-	"static struct amd64_inst_variant amd64_%s_variants[] = {\n",
+	"static const struct amd64_inst_variant amd64_%s_variants[] = {\n",
 	"{XS0("X", "X", "X"), XS1("X", "X"), XD("X", "X")},\n",
 	"END};\n"
 };
 #undef X
 
 static const char *inst_template =
-"static struct amd64_inst amd64_%s_inst = {\"%s\",amd64_%s_variants};\n";
+"static const struct amd64_inst amd64_%s_inst = {\"%s\",amd64_%s_variants};\n";
 
-static void
-expect(const char **_c, char expect)
+static char *
+until(const char **_c, const char *expect)
 {
 	const char *c = *_c;
+	char *r;
 	for (; *c; c++) {
-		if (*c == expect) {
+		r = strchr(expect, *c);
+		if (r != NULL) {
 			c++;
 			*_c = c;
-			return;
+			return r;
 		}
 	}
 	fprintf(stderr, "end of file\n");
@@ -42,42 +41,19 @@ expect(const char **_c, char expect)
 }
 
 static unsigned int
-parse_dst(const char **_c)
-{
-	const char *c = *_c;
-	unsigned int flag = 0, off = 0;
-	expect(&c, ':');
-	for (; *c; c++) {
-		switch (*c) {
-		case 'b': off |= 1;           break;
-		case 'w': off |= 1 << 1;      break;
-		case 'l': off |= 1 << 2;      break;
-		case 'q': off |= 1 << 3;      break;
-		case 'm': flag |= off;        break;
-		case 'r': flag |= (off << 4); break;
-		case '.': break;
-		default: goto end; break;
-		}
-	}
-end:
-	*_c = c;
-	return flag;
-}
-
-static unsigned int
-parse_src_flag(const char **_c)
+parse_flag(const char **_c)
 {
 	const char *c = *_c;
 	unsigned int flag = 0, off = 0;
 	for (; *c; c++) {
 		switch (*c) {
-		case 'b': off |= 1;           break;
-		case 'w': off |= 1 << 1;      break;
-		case 'l': off |= 1 << 2;      break;
-		case 'q': off |= 1 << 3;      break;
-		case 'i': flag |= off;        break;
+		case 'b': off |= SIZ8_BIT;    break;
+		case 'w': off |= SIZ16_BIT;   break;
+		case 'l': off |= SIZ32_BIT;   break;
+		case 'q': off |= SIZ64_BIT;   break;
+		case 'i': flag |= (off << 8); break;
 		case 'm': flag |= (off << 4); break;
-		case 'r': flag |= (off << 8); break;
+		case 'r': flag |= off;        break;
 		case '.': break;
 		default: goto end; break;
 		}
@@ -88,28 +64,26 @@ end:
 }
 
 static unsigned int
-parse_src0(const char **_c)
+parse_operand(const char **_c)
 {
 	const char *c = *_c;
 	unsigned int flag = 0;
-
-	expect(&c, ':');
-	flag = parse_src_flag(&c);
-
+	char *r = until(&c, ":,");
+	if (*r == ',')
+		return 0;
+	flag = parse_flag(&c);
 	*_c = c;
 	return flag;
 }
 
 static unsigned int
-parse_src1(const char **_c)
+parse_operand_no_imm(const char **_c)
 {
-	const char *c = *_c;
-	unsigned int flag = 0;
-
-	expect(&c, ':');
-	flag = parse_src_flag(&c);
-
-	*_c = c;
+	unsigned int flag = parse_operand(_c);
+	if (flag & IMM_BIT) {
+		fprintf(stderr, "imm in dst\n");
+		exit(1);
+	}
 	return flag;
 }
 
@@ -130,15 +104,15 @@ parse_variant()
 		switch (*c) {
 		case '0':
 			c++;
-			flag0 = parse_src0(&c);
+			flag0 = parse_operand(&c);
 			goto end;
 		case '1':
 			c++;
-			flag1 = parse_src1(&c);
+			flag1 = parse_operand_no_imm(&c);
 			goto end;
 		case '=':
 			c++;
-			flag2 = parse_dst(&c);
+			flag2 = parse_operand_no_imm(&c);
 			goto end;
 		end:
 			c--;
@@ -147,18 +121,14 @@ parse_variant()
 	}
 
 #define X(F, O) \
-	(F & (1 << (O))) ? 1 : 0, \
-	(F & (1 << (1 + O))) ? 1 : 0, \
-	(F & (1 << (2 + O))) ? 1 : 0, \
-	(F & (1 << (3 + O))) ? 1 : 0
+	(F & (SIZ8_BIT  << O)) ? 1 : 0, \
+	(F & (SIZ16_BIT << O)) ? 1 : 0, \
+	(F & (SIZ32_BIT << O)) ? 1 : 0, \
+	(F & (SIZ64_BIT << O)) ? 1 : 0
 	fprintf(out, inst_variants_template[1],
-			X(flag0, 0),
-			X(flag0, 4),
-			X(flag0, 8),
-			X(flag1, 4),
-			X(flag1, 8),
-			X(flag2, 4),
-			X(flag2, 8));
+			X(flag0, 8), X(flag0, 4), X(flag0, 0),
+			X(flag1, 4), X(flag1, 0),
+			X(flag2, 4), X(flag2, 0));
 #undef X
 }
 
@@ -182,14 +152,17 @@ parse_inst()
 	assert(c != beg);
 	name = strndup(beg, c - beg);
 
-	expect(&c, ']');
-	fmt = strndup(lbuf + 1, c - lbuf - 1);
+	until(&c, "]");
+	fmt = strndup(lbuf + 1, c - lbuf - 2);
 
 	c = lbuf;
 	beg = c;
 	fprintf(out, inst_variants_template[0], name);
-	while (fgets(lbuf, BUFSIZ, in))
+	while (fgets(lbuf, BUFSIZ, in)) {
+		if (*lbuf == '[')
+			break;
 		parse_variant();
+	}
 	fprintf(out, "%s", inst_variants_template[2]);
 
 	fprintf(out, inst_template, name, fmt, name);
@@ -209,11 +182,12 @@ main(int argc, char *argv[])
 	in = fopen(argv[1], "r");
 	out = fopen(argv[2], "w");
 
-	while (fgets(lbuf, BUFSIZ, in)) {
-		if (lbuf[0] == '[')
-			parse_inst();
-	}
+	if (!fgets(lbuf, BUFSIZ, in))
+		goto end;
+	while (*lbuf == '[')
+		parse_inst();
 
+end:
 	fclose(out);
 	fclose(in);
 

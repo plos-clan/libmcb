@@ -24,6 +24,7 @@ struct mcb_val {
 
 struct mcb_val *mcb_def_imm(struct mcb_fn *fn, int64_t imm);
 struct mcb_val *mcb_def_val(struct mcb_fn *fn);
+void mcb_drop_val(struct mcb_val *val, struct mcb_blk *blk);
 void mcb_free_val(struct mcb_val *val);
 void mcb_use_val(struct mcb_val *val, struct mcb_inst *user);
 

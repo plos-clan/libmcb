@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 #include <assert.h>
 #include "mcb/amd64_all.h"
+#include "mcb/typ.h"
 
 static const char *regs[NREG][4] = {
        [RBP]  = {"%rbp", "%ebp",  "%bp",   "%bpl" },
@@ -22,8 +23,15 @@ static const char *regs[NREG][4] = {
 };
 
 const char *
-mcb_amd64_str_reg(enum REG r, int siz_off)
+mcb_amd64_str_reg(enum REG r, mcb_typ typ)
 {
+	int off = 0;
 	assert(r < NREG);
-	return regs[r][siz_off];
+	switch (typ) {
+	case MCB_I8:  off = 3; break;
+	case MCB_I16: off = 2; break;
+	case MCB_I32: off = 1; break;
+	case MCB_I64: off = 0; break;
+	}
+	return regs[r][off];
 }

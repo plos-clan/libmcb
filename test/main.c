@@ -3,7 +3,7 @@
 #include "mcb/ctx.h"
 #include "mcb/fn.h"
 #include "mcb/inst.h"
-#include "mcb/type.h"
+#include "mcb/typ.h"
 #include "mcb/val.h"
 
 int main() {
@@ -23,7 +23,9 @@ int main() {
 			MCB_I32, v1,
 			MCB_I32, r0);
 
-	mcb_amd64_build(ctx);
+	struct mcb_amd64_ctx *amd64_ctx = mcb_amd64_build(ctx);
+	mcb_amd64_output(stdout, amd64_ctx);
+	mcb_amd64_free_ctx(amd64_ctx);
 
 	mcb_free_ctx(ctx);
 

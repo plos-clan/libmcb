@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "mcb/fn.h"
+#include "mcb/reg.h"
 #include "mcb/val.h"
 
 #include "darr.h"
@@ -23,8 +24,24 @@ mcb_def_val(struct mcb_fn *fn)
 {
 	struct mcb_val *val = ecalloc(1, sizeof(*val));
 	assert(fn);
+	val->inner.reg = -1;
+	val->kind = MCB_REG_VAL;
 	darr_append(fn->vals, fn->nval, val);
 	return val;
+}
+
+void
+mcb_drop_val(struct mcb_val *val, struct mcb_blk *blk)
+{
+	if (!val)
+		return;
+	switch (val->kind) {
+	case MCB_REG_VAL:
+		mcb_drop_reg(val->inner.reg, blk);
+		break;
+	default:
+		break;
+	}
 }
 
 void
