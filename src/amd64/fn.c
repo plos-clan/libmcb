@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 #include <assert.h>
 #include <stdint.h>
-#include "mcb/amd64_all.h"
+#include "mcb/amd64/all.h"
 
 static struct mcb_text_block *
 build_enter(struct mcb_amd64_ctx *ctx, struct mcb_fn *fn)

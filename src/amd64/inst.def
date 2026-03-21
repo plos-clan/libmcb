@@ -10,7 +10,11 @@
 %0:w.i, %1:w.rm,     %=:w.r
 %0:l.i, %1:lq.rm,    %=:lq.r
 %0,     %1:wlq.rm,   %=:wlq.r
-; %0[=],  %1:bwlq.rm,  %=[rax+rdx]
+%0[=],  %1:bwlq.rm,  %=[rax+rdx]
+
+; umul
+[+mul%s %1]
+%0[=], %1:bwlq.rm, %=[rax+rdx]
 
 [mov%s %0, %=]
 %0:bwlq.r,  %=:bwlq.rm

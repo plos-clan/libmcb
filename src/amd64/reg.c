@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 #include <assert.h>
-#include "mcb/amd64_all.h"
+#include "mcb/amd64/all.h"
 #include "mcb/typ.h"
 
 static const char *regs[NREG][4] = {

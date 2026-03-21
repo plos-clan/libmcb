@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "mcb/amd64_all.h"
+#include "mcb/amd64/all.h"
 #include "mcb/typ.h"
 #include "mcb/val.h"
 

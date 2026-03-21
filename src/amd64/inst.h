@@ -1,3 +1,8 @@
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
+#ifndef LIBMCB_AMD64_INST_H
+#define LIBMCB_AMD64_INST_H
+#include "mcb/amd64/reg.h"
+
 #define SIZ8_OFF  0
 #define SIZ16_OFF 1
 #define SIZ32_OFF 2
@@ -27,13 +32,18 @@ enum {
 	REG_BIT = REG8_BIT | REG16_BIT | REG32_BIT | REG64_BIT
 };
 
-#define AMD64_INST_VARIANT_END {0,0,0}
+#define AMD64_INST_VARIANT_END {0,0,0,{NREG,NREG},{NREG,NREG},{NREG,NREG}}
 #define is_end_variant(V) ((V).src0 == 0 && (V).src1 == 0 && (V).dst == 0)
 struct amd64_inst_variant {
 	unsigned int src0:12, src1:8, dst:8;
+	enum REG src0_reg[2];
+	enum REG src1_reg[2];
+	enum REG dst_reg[2];
 };
 
 struct amd64_inst {
 	const char *fmt;
 	const struct amd64_inst_variant *variants;
 };
+
+#endif

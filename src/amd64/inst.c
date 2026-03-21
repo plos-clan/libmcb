@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "mcb/amd64_all.h"
+#include "mcb/amd64/all.h"
 #include "mcb/reg.h"
 #include "mcb/str.h"
 #include "mcb/typ.h"

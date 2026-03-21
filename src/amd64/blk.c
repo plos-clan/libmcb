@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "mcb/amd64_all.h"
+#include "mcb/amd64/all.h"
 
 #include "../ealloc.h"
 
