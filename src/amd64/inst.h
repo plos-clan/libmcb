@@ -8,6 +8,8 @@
 #define SIZ32_OFF 2
 #define SIZ64_OFF 3
 
+#define USE_DST_SET (NREG + 1)
+
 enum {
 	SIZ8_BIT  = 1 << SIZ8_OFF,
 	SIZ16_BIT = 1 << SIZ16_OFF,

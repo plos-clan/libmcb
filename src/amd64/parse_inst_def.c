@@ -71,7 +71,8 @@ static const char *reg_upper_str[] = {
        [R13]  = "R13",
        [R14]  = "R14",
        [R15]  = "R15",
-       [NREG] = "NREG"
+       [NREG] = "NREG",
+       [USE_DST_SET] = "USE_DST_SET"
 };
 
 enum REG
@@ -158,16 +159,15 @@ parse_operand(struct amd64_inst_variant *variant, const char **_c)
 	if (*r == ',')
 		return 0;
 	if (*r == '[') {
-		*_c = c;
 		switch (o) {
 		case '0':
-			parse_operand_reg(variant->src0_reg, _c);
+			parse_operand_reg(variant->src0_reg, &c);
 			break;
 		case '1':
-			parse_operand_reg(variant->src1_reg, _c);
+			parse_operand_reg(variant->src1_reg, &c);
 			break;
 		case '=':
-			parse_operand_reg(variant->dst_reg, _c);
+			parse_operand_reg(variant->dst_reg, &c);
 			break;
 		}
 	}
@@ -198,6 +198,18 @@ parse_operand_reg(enum REG reg[2], const char **_c)
 	const char *beg = *_c;
 	const char *c = *_c;
 	int i = 0;
+
+	if (*c == '=') {
+		c++;
+		if (*c != ']') {
+			fprintf(stderr, "expected ']'\n");
+			exit(1);
+		}
+		reg[0] = USE_DST_SET;
+		reg[1] = USE_DST_SET;
+		goto end;
+	}
+
 	for (; *c && *c != ']'; c++) {
 		if (*c != '+')
 			continue;
@@ -210,6 +222,7 @@ parse_operand_reg(enum REG reg[2], const char **_c)
 		i = 1;
 	}
 	reg[i] = match_reg(beg, c - beg);
+end:
 	*_c = c;
 }
 
@@ -247,6 +260,20 @@ parse_variant()
 			c--;
 			break;
 		}
+	}
+
+	if (variant.dst_reg[0] != NREG)
+		variant.dst |= (MEM_BIT | REG_BIT);
+
+	if (variant.src0_reg[0] == USE_DST_SET) {
+		variant.src0 = variant.dst;
+		variant.src0_reg[0] = variant.dst_reg[0];
+		variant.src0_reg[1] = variant.dst_reg[1];
+	}
+	if (variant.src1_reg[0] == USE_DST_SET) {
+		variant.src1 = variant.dst;
+		variant.src1_reg[0] = variant.dst_reg[0];
+		variant.src1_reg[1] = variant.dst_reg[1];
 	}
 
 #define X(F, O) \

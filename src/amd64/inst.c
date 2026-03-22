@@ -72,27 +72,41 @@ static enum REG build_imm_src(char **_s, char **_prepare,
 		mcb_typ typ,
 		unsigned int src_bit,
 		struct mcb_amd64_ctx *ctx);
+
 static char *build_inst(struct mcb_amd64_ctx *ctx, struct mcb_inst *inst);
+
 static enum REG build_src(char **_s, char **_prepare,
 		const struct mcb_val *dst,
-		struct mcb_val *src,
-		mcb_typ typ,
-		unsigned int src_bit,
+		struct mcb_val *src, mcb_typ typ, unsigned int src_bit,
 		struct mcb_amd64_ctx *ctx);
-static unsigned int get_operand_flag(
-		bool allow_imm,
-		mcb_typ typ,
-		enum MCB_VAL_KIND val_kind);
-static unsigned int get_operand_flag_base(mcb_typ typ);
-static const struct amd64_inst_variant *get_variant(
-		const struct amd64_inst *inst_def,
-		const struct mcb_inst *inst);
+
 static void format_inst(struct str *s,
 		const struct amd64_inst *inst_def,
 		const struct amd64_inst_variant *variant,
 		char *src0, char *src1, char *dst,
 		mcb_typ dst_typ);
+
 static void format_operand(const char **_c, struct str *s, char *op);
+
+static unsigned int get_operand_flag(
+		bool allow_imm,
+		mcb_typ typ,
+		enum MCB_VAL_KIND val_kind);
+
+static unsigned int get_operand_flag_base(mcb_typ typ);
+
+static const struct amd64_inst_variant *get_variant(
+		const struct amd64_inst *inst_def,
+		const struct mcb_inst *inst);
+
+static void get_variant_match(
+		struct amd64_inst_variant *match,
+		const struct mcb_inst *inst);
+
+static bool match_variant(
+		const struct amd64_inst_variant *variant,
+		const struct amd64_inst_variant *match,
+		const struct mcb_inst *inst);
 
 enum REG
 build_imm_src(char **s, char **prepare,
@@ -159,7 +173,7 @@ build_inst(struct mcb_amd64_ctx *ctx, struct mcb_inst *inst)
 		eabort("get_variant()");
 
 	if (inst->dst->kind == MCB_REG_VAL && inst->dst->inner.reg == -1) {
-		inst->dst->inner.reg = mcb_alloc_reg(NREG, NREG,
+		inst->dst->inner.reg = mcb_alloc_reg(variant->dst_reg[0], NREG,
 				reg_alloc_area,
 				inst->dst, ctx->cur_blk);
 	}
@@ -265,6 +279,25 @@ format_inst(struct str *s,
 	estr_append_chr(s, '\n');
 }
 
+void
+format_operand(const char **_c, struct str *s, char *op)
+{
+	const char *c;
+	assert(_c && s);
+	c = *_c;
+
+	if (op) {
+		str_append_cstr(s, op);
+		return;
+	}
+
+	for (; *c && *c != ','; c++);
+	if (*c == '\0')
+		c--;
+
+	*_c = c;
+}
+
 unsigned int
 get_operand_flag(bool allow_imm, mcb_typ typ, enum MCB_VAL_KIND val_kind)
 {
@@ -295,52 +328,70 @@ get_operand_flag_base(mcb_typ typ)
 const struct amd64_inst_variant *
 get_variant(const struct amd64_inst *inst_def, const struct mcb_inst *inst)
 {
-	unsigned int flag0, flag1, flag2;
-	mcb_typ src0_typ;
+	struct amd64_inst_variant match = {0};
 	const struct amd64_inst_variant *variant = NULL;
 
-	if (inst->arg[0]) {
-		src0_typ = inst->typ[0];
-		if (inst->arg[0]->kind == MCB_IMM_VAL)
-			src0_typ = mcb_get_typ_of_imm(inst->arg[0]->inner.imm);
-		flag0 = get_operand_flag(true, src0_typ, inst->arg[0]->kind);
+	get_variant_match(&match, inst);
+
+	/* match with imm first */
+	for (variant = inst_def->variants;
+			!is_end_variant(*variant);
+			variant++) {
+		if (match_variant(variant, &match, inst))
+			return variant;
 	}
 
-	if (inst->arg[1])
-		flag1 = get_operand_flag(false, inst->typ[1], inst->arg[1]->kind);
-	if (inst->dst)
-		flag2 = get_operand_flag(false, inst->typ[2], inst->dst->kind);
-
-	for (variant = inst_def->variants; !is_end_variant(*variant); variant++) {
-		if (inst->arg[0] && variant->src0 != 0 && !(flag0 & variant->src0))
-			continue;
-		if (inst->arg[1] && variant->src1 != 0 && !(flag1 & variant->src1))
-			continue;
-		if (inst->dst && variant->dst != 0 && !(flag2 & variant->dst))
-			continue;
-		return variant;
+	/* imm to reg and then try match */
+	match.src0 |= (match.src0 >> 8);
+	for (variant = inst_def->variants;
+			!is_end_variant(*variant);
+			variant++) {
+		if (match_variant(variant, &match, inst))
+			return variant;
 	}
 
 	return NULL;
 }
 
 void
-format_operand(const char **_c, struct str *s, char *op)
+get_variant_match(
+		struct amd64_inst_variant *match,
+		const struct mcb_inst *inst)
 {
-	const char *c;
-	assert(_c && s);
-	c = *_c;
+	mcb_typ src0_typ;
 
-	if (op) {
-		str_append_cstr(s, op);
-		return;
+	if (inst->arg[0]) {
+		src0_typ = inst->typ[0];
+		if (inst->arg[0]->kind == MCB_IMM_VAL)
+			src0_typ = mcb_get_typ_of_imm(inst->arg[0]->inner.imm);
+		match->src0 = get_operand_flag(true,
+				src0_typ,
+				inst->arg[0]->kind);
 	}
 
-	for (; *c && *c != ','; c++);
-	if (*c == '\0')
-		c--;
+	if (inst->arg[1])
+		match->src1 = get_operand_flag(false,
+				inst->typ[1],
+				inst->arg[1]->kind);
+	if (inst->dst)
+		match->dst = get_operand_flag(false,
+				inst->typ[2],
+				inst->dst->kind);
+}
 
-	*_c = c;
+bool
+match_variant(
+		const struct amd64_inst_variant *variant,
+		const struct amd64_inst_variant *match,
+		const struct mcb_inst *inst)
+{
+	if (inst->arg[0] && !(match->src0 & variant->src0))
+		return false;
+	if (inst->arg[1] && !(match->src1 & variant->src1))
+		return false;
+	if (inst->dst && !(match->dst & variant->dst))
+		return false;
+	return true;
 }
 
 int
