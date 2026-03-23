@@ -31,8 +31,11 @@ mcb_alloc_reg(int expect, int nreg, const int *in, struct mcb_val *user, struct 
 		return auto_alloc_reg(nreg, in, user, blk);
 
 	//TODO: expect
+	assert(!blk->using_regs[expect]);
+	blk->allocated_regs[expect] = true;
+	blk->using_regs[expect] = user;
 
-	return nreg;
+	return expect;
 }
 
 struct mcb_val *

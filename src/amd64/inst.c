@@ -17,6 +17,13 @@
 
 #include "inst.h"
 
+struct amd64_operand {
+	struct mcb_val *val;
+	mcb_typ typ;
+	unsigned int bit;
+	const enum REG *reg;
+};
+
 #define free_if(P) if (P) { free(P); }
 
 #define _X(I,S) ((I) ? S : 0)
@@ -54,6 +61,7 @@
 static const struct amd64_inst *amd64_insts[] = {
 	[MCBO_add]  = &amd64_add_inst,
 	[MCBO_smul] = &amd64_imul_inst,
+	[MCBO_umul] = &amd64_mul_inst,
 	[MCBO_str]  = &amd64_mov_inst,
 	NULL
 };
@@ -66,18 +74,16 @@ static const char suffix[] = {
 	'\0'
 };
 
-static enum REG build_imm_src(char **_s, char **_prepare,
+static enum REG build_imm_src(char **s, char **prepare,
 		const struct mcb_val *dst,
-		struct mcb_val *src,
-		mcb_typ typ,
-		unsigned int src_bit,
+		struct amd64_operand *operand,
 		struct mcb_amd64_ctx *ctx);
 
 static char *build_inst(struct mcb_amd64_ctx *ctx, struct mcb_inst *inst);
 
-static enum REG build_src(char **_s, char **_prepare,
+static enum REG build_src(char **s, char **prepare,
 		const struct mcb_val *dst,
-		struct mcb_val *src, mcb_typ typ, unsigned int src_bit,
+		struct amd64_operand *operand,
 		struct mcb_amd64_ctx *ctx);
 
 static void format_inst(struct str *s,
@@ -111,39 +117,37 @@ static bool match_variant(
 enum REG
 build_imm_src(char **s, char **prepare,
 		const struct mcb_val *dst,
-		struct mcb_val *src,
-		mcb_typ typ,
-		unsigned int src_bit,
+		struct amd64_operand *operand,
 		struct mcb_amd64_ctx *ctx)
 {
 	enum REG allocated = NREG, to = NREG;
 	struct mcb_inst fake_inst = {0};
 
-	if (src == NULL)
+	assert(s && prepare && dst && operand);
+
+	if (operand->val == NULL)
 		return NREG;
 
-	assert(s && prepare && dst && src);
-
-	if (src_bit & IMM_BIT) {
-		*s = mcb_amd64_str_imm(src->inner.imm);
+	if (operand->bit & IMM_BIT) {
+		*s = mcb_amd64_str_imm(operand->val->inner.imm);
 		return NREG;
 	}
 
-	if (dst->kind == MCB_REG_VAL) {
-		*s = mcb_amd64_str_val(dst, typ);
+	if (operand->reg[0] == USE_DST_SET && dst->kind == MCB_REG_VAL) {
+		*s = mcb_amd64_str_val(dst, operand->typ);
 		to = dst->inner.reg;
 	} else {
-		allocated = mcb_alloc_reg(NREG, NREG,
+		allocated = mcb_alloc_reg(operand->reg[0], NREG,
 				reg_alloc_area,
-				src, ctx->cur_blk);
-		*s = strdup(mcb_amd64_str_reg(allocated, typ));
+				operand->val, ctx->cur_blk);
+		*s = strdup(mcb_amd64_str_reg(allocated, operand->typ));
 		to = allocated;
 	}
 
 	fake_inst.op = MCBO_str;
-	fake_inst.typ[0] = typ;
-	fake_inst.typ[2] = typ;
-	fake_inst.arg[0] = src;
+	fake_inst.typ[0] = operand->typ;
+	fake_inst.typ[2] = operand->typ;
+	fake_inst.arg[0] = operand->val;
 	fake_inst.dst = &(struct mcb_val){
 		.kind = MCB_REG_VAL, .inner.reg = to
 	};
@@ -180,14 +184,26 @@ build_inst(struct mcb_amd64_ctx *ctx, struct mcb_inst *inst)
 
 	dst = mcb_amd64_str_val(inst->dst, inst->typ[2]);
 
+	struct amd64_operand src0_op = {
+		inst->arg[0],
+		inst->typ[0],
+		variant->src0,
+		variant->src0_reg
+	};
 	src0_reg = build_src(&src0, &prepare_src0,
-			inst->dst, inst->arg[0], inst->typ[0],
-			variant->src0, ctx);
+			inst->dst, &src0_op, ctx);
+
+	struct amd64_operand src1_op = {
+		inst->arg[1],
+		inst->typ[1],
+		variant->src1,
+		variant->src1_reg
+	};
 	src1_reg = build_src(&src1, &prepare_src1,
-			inst->dst, inst->arg[1], inst->typ[1],
-			variant->src1, ctx);
+			inst->dst, &src1_op, ctx);
 
 	str_empty(&result);
+	str_append_cstr(&result, prepare_src0);
 	str_append_cstr(&result, prepare_src1);
 	format_inst(&result, inst_def, variant,
 			src0, src1, dst, inst->typ[2]);
@@ -214,22 +230,18 @@ build_inst(struct mcb_amd64_ctx *ctx, struct mcb_inst *inst)
 enum REG
 build_src(char **s, char **prepare,
 		const struct mcb_val *dst,
-		struct mcb_val *src,
-		mcb_typ typ,
-		unsigned int src_bit,
+		struct amd64_operand *operand,
 		struct mcb_amd64_ctx *ctx)
 {
-	if (src == NULL)
+	assert(s && prepare && dst && operand);
+	if (operand->val == NULL)
 		return NREG;
 
-	assert(s && prepare && dst && src);
-
-	switch (src->kind) {
+	switch (operand->val->kind) {
 	case MCB_IMM_VAL:
-		return build_imm_src(s, prepare, dst, src, typ,
-				src_bit, ctx);
+		return build_imm_src(s, prepare, dst, operand, ctx);
 	case MCB_REG_VAL:
-		*s = mcb_amd64_str_val(src, typ);
+		*s = mcb_amd64_str_val(operand->val, operand->typ);
 		break;
 	default:
 		assert(0);

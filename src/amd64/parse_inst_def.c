@@ -34,54 +34,34 @@ static const char *inst_variants_template[] = {
 static const char *inst_template =
 "static const struct amd64_inst amd64_%s_inst = {\"%s\",amd64_%s_variants};\n";
 
-static const char *reg_str[] = {
-       [RBP]  = "rbp",
-       [RSP]  = "rsp",
-       [RAX]  = "rax",
-       [RBX]  = "rbx",
-       [RCX]  = "rcx",
-       [RDX]  = "rdx",
-       [RDI]  = "rdi",
-       [RSI]  = "rsi",
-       [R8 ]  = "r8",
-       [R9 ]  = "r9",
-       [R10]  = "r10",
-       [R11]  = "r11",
-       [R12]  = "r12",
-       [R13]  = "r13",
-       [R14]  = "r14",
-       [R15]  = "r15",
-       NULL
-};
-
-static const char *reg_upper_str[] = {
-       [RBP]  = "RBP",
-       [RSP]  = "RSP",
-       [RAX]  = "RAX",
-       [RBX]  = "RBX",
-       [RCX]  = "RCX",
-       [RDX]  = "RDX",
-       [RDI]  = "RDI",
-       [RSI]  = "RSI",
-       [R8 ]  = "R8",
-       [R9 ]  = "R9",
-       [R10]  = "R10",
-       [R11]  = "R11",
-       [R12]  = "R12",
-       [R13]  = "R13",
-       [R14]  = "R14",
-       [R15]  = "R15",
-       [NREG] = "NREG",
-       [USE_DST_SET] = "USE_DST_SET"
+static const char *reg_str[][2] = {
+       [RBP]         = {"rbp", "RBP"        },
+       [RSP]         = {"rsp", "RSP"        },
+       [RAX]         = {"rax", "RAX"        },
+       [RBX]         = {"rbx", "RBX"        },
+       [RCX]         = {"rcx", "RCX"        },
+       [RDX]         = {"rdx", "RDX"        },
+       [RDI]         = {"rdi", "RDI"        },
+       [RSI]         = {"rsi", "RSI"        },
+       [R8 ]         = {"r8",  "R8"         },
+       [R9 ]         = {"r9",  "R9"         },
+       [R10]         = {"r10", "R10"        },
+       [R11]         = {"r11", "R11"        },
+       [R12]         = {"r12", "R12"        },
+       [R13]         = {"r13", "R13"        },
+       [R14]         = {"r14", "R14"        },
+       [R15]         = {"r15", "R15"        },
+       [NREG]        = {NULL,  "NREG"       },
+       [USE_DST_SET] = {NULL,  "USE_DST_SET"}
 };
 
 enum REG
 match_reg(const char *s, size_t len)
 {
-	for (enum REG i = 0; reg_str[i]; i++) {
-		if (strlen(reg_str[i]) != len)
+	for (enum REG i = 0; reg_str[i][0]; i++) {
+		if (strlen(reg_str[i][0]) != len)
 			continue;
-		if (strncmp(s, reg_str[i], len) == 0)
+		if (strncmp(s, reg_str[i][0], len) == 0)
 			return i;
 	}
 	return NREG;
@@ -265,16 +245,10 @@ parse_variant()
 	if (variant.dst_reg[0] != NREG)
 		variant.dst |= (MEM_BIT | REG_BIT);
 
-	if (variant.src0_reg[0] == USE_DST_SET) {
+	if (variant.src0_reg[0] == USE_DST_SET)
 		variant.src0 = variant.dst;
-		variant.src0_reg[0] = variant.dst_reg[0];
-		variant.src0_reg[1] = variant.dst_reg[1];
-	}
-	if (variant.src1_reg[0] == USE_DST_SET) {
+	if (variant.src1_reg[0] == USE_DST_SET)
 		variant.src1 = variant.dst;
-		variant.src1_reg[0] = variant.dst_reg[0];
-		variant.src1_reg[1] = variant.dst_reg[1];
-	}
 
 #define X(F, O) \
 	(F & (SIZ8_BIT  << O)) ? 1 : 0, \
@@ -286,12 +260,12 @@ parse_variant()
 			X(variant.src0, 0),
 			X(variant.src1, 4), X(variant.src1, 0),
 			X(variant.dst,  4), X(variant.dst,  0),
-			reg_upper_str[variant.src0_reg[0]],
-			reg_upper_str[variant.src0_reg[1]],
-			reg_upper_str[variant.src1_reg[0]],
-			reg_upper_str[variant.src1_reg[1]],
-			reg_upper_str[variant.dst_reg[0]],
-			reg_upper_str[variant.dst_reg[1]]);
+			reg_str[variant.src0_reg[0]][1],
+			reg_str[variant.src0_reg[1]][1],
+			reg_str[variant.src1_reg[0]][1],
+			reg_str[variant.src1_reg[1]][1],
+			reg_str[variant.dst_reg[0]][1],
+			reg_str[variant.dst_reg[1]][1]);
 #undef X
 }
 
