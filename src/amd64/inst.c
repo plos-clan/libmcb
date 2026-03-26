@@ -37,10 +37,8 @@ struct amd64_operand {
 #define _XG8(B,W,L,Q) _XG(B,W,L,Q,8)
 
 #define END AMD64_INST_VARIANT_END
-#define XS0(IB,IW,IL,IQ, MB,MW,ML,MQ, RB,RW,RL,RQ) \
+#define XS(IB,IW,IL,IQ, MB,MW,ML,MQ, RB,RW,RL,RQ) \
 	(_XG8(IB,IW,IL,IQ) | _XG4(MB,MW,ML,MQ) | _XG0(RB,RW,RL,RQ))
-#define XS1(MB,MW,ML,MQ, RB,RW,RL,RQ) \
-	(_XG4(MB,MW,ML,MQ) | _XG0(RB,RW,RL,RQ))
 #define XD(MB,MW,ML,MQ, RB,RW,RL,RQ) \
 	(_XG4(MB,MW,ML,MQ) | _XG0(RB,RW,RL,RQ))
 
@@ -54,12 +52,12 @@ struct amd64_operand {
 #undef _XG
 
 #undef END
-#undef XS0
-#undef XS1
 #undef XD
 
 static const struct amd64_inst *amd64_insts[] = {
 	[MCBO_add]  = &amd64_add_inst,
+	[MCBO_sdiv] = &amd64_idiv_inst,
+	[MCBO_udiv] = &amd64_div_inst,
 	[MCBO_smul] = &amd64_imul_inst,
 	[MCBO_umul] = &amd64_mul_inst,
 	[MCBO_str]  = &amd64_mov_inst,
@@ -74,16 +72,21 @@ static const char suffix[] = {
 	'\0'
 };
 
-static enum REG build_imm_src(char **s, char **prepare,
+static enum REG build_imm_src(char **s, struct str *blk,
 		const struct mcb_val *dst,
 		struct amd64_operand *operand,
 		struct mcb_amd64_ctx *ctx);
 
 static char *build_inst(struct mcb_amd64_ctx *ctx, struct mcb_inst *inst);
 
-static enum REG build_src(char **s, char **prepare,
+static enum REG build_src(char **s, struct str *blk,
 		const struct mcb_val *dst,
 		struct amd64_operand *operand,
+		struct mcb_amd64_ctx *ctx);
+
+static void clean_regs(
+		const struct mcb_val *dst,
+		struct str *blk,
 		struct mcb_amd64_ctx *ctx);
 
 static void format_inst(struct str *s,
@@ -93,6 +96,10 @@ static void format_inst(struct str *s,
 		mcb_typ dst_typ);
 
 static void format_operand(const char **_c, struct str *s, char *op);
+
+static char *get_dst(struct mcb_amd64_ctx *ctx, struct mcb_inst *inst,
+		const struct mcb_inst *orig_inst,
+		const struct amd64_inst_variant *variant);
 
 static unsigned int get_operand_flag(
 		bool allow_imm,
@@ -114,16 +121,24 @@ static bool match_variant(
 		const struct amd64_inst_variant *match,
 		const struct mcb_inst *inst);
 
+static bool match_variant_operand(
+		unsigned int bit,
+		unsigned int expect,
+		const struct mcb_val *val);
+
+static void try_swap_operand(struct mcb_inst *inst);
+
 enum REG
-build_imm_src(char **s, char **prepare,
+build_imm_src(char **s, struct str *blk,
 		const struct mcb_val *dst,
 		struct amd64_operand *operand,
 		struct mcb_amd64_ctx *ctx)
 {
 	enum REG allocated = NREG, to = NREG;
+	char *buf = NULL;
 	struct mcb_inst fake_inst = {0};
 
-	assert(s && prepare && dst && operand);
+	assert(s && blk && dst && operand);
 
 	if (operand->val == NULL)
 		return NREG;
@@ -152,7 +167,12 @@ build_imm_src(char **s, char **prepare,
 		.kind = MCB_REG_VAL, .inner.reg = to
 	};
 
-	*prepare = build_inst(ctx, &fake_inst);
+	buf = build_inst(ctx, &fake_inst);
+	assert(buf);
+	
+	estr_append_cstr(blk, buf);
+
+	free(buf);
 
 	return allocated;
 }
@@ -160,29 +180,32 @@ build_imm_src(char **s, char **prepare,
 char *
 build_inst(struct mcb_amd64_ctx *ctx, struct mcb_inst *inst)
 {
+	struct mcb_inst inst_cpy;
 	const struct amd64_inst *inst_def;
+	const struct mcb_inst *orig_inst;
 	struct str result;
 	const struct amd64_inst_variant *variant;
 
 	char *src0 = NULL, *src1 = NULL, *dst = NULL;
-	char *prepare_src0 = NULL, *prepare_src1 = NULL;
 
 	enum REG src0_reg = NREG, src1_reg = NREG;
 
 	assert(ctx && inst);
 
+	str_empty(&result);
+
+	orig_inst = inst;
+
 	inst_def = amd64_insts[inst->op];
+	memcpy(&inst_cpy, inst, sizeof(*inst));
+	inst = &inst_cpy;
+
+	if (inst_def->fmt[0] == '+')
+		try_swap_operand(inst);
+
 	variant = get_variant(inst_def, inst);
-	if (!variant)
-		eabort("get_variant()");
 
-	if (inst->dst->kind == MCB_REG_VAL && inst->dst->inner.reg == -1) {
-		inst->dst->inner.reg = mcb_alloc_reg(variant->dst_reg[0], NREG,
-				reg_alloc_area,
-				inst->dst, ctx->cur_blk);
-	}
-
-	dst = mcb_amd64_str_val(inst->dst, inst->typ[2]);
+	dst = get_dst(ctx, inst, orig_inst, variant);
 
 	struct amd64_operand src0_op = {
 		inst->arg[0],
@@ -190,7 +213,7 @@ build_inst(struct mcb_amd64_ctx *ctx, struct mcb_inst *inst)
 		variant->src0,
 		variant->src0_reg
 	};
-	src0_reg = build_src(&src0, &prepare_src0,
+	src0_reg = build_src(&src0, &result,
 			inst->dst, &src0_op, ctx);
 
 	struct amd64_operand src1_op = {
@@ -199,12 +222,9 @@ build_inst(struct mcb_amd64_ctx *ctx, struct mcb_inst *inst)
 		variant->src1,
 		variant->src1_reg
 	};
-	src1_reg = build_src(&src1, &prepare_src1,
+	src1_reg = build_src(&src1, &result,
 			inst->dst, &src1_op, ctx);
 
-	str_empty(&result);
-	str_append_cstr(&result, prepare_src0);
-	str_append_cstr(&result, prepare_src1);
 	format_inst(&result, inst_def, variant,
 			src0, src1, dst, inst->typ[2]);
 
@@ -221,25 +241,23 @@ build_inst(struct mcb_amd64_ctx *ctx, struct mcb_inst *inst)
 	free_if(src0);
 	free_if(src1);
 	free_if(dst);
-	free_if(prepare_src0);
-	free_if(prepare_src1);
 
 	return result.s;
 }
 
 enum REG
-build_src(char **s, char **prepare,
+build_src(char **s, struct str *blk,
 		const struct mcb_val *dst,
 		struct amd64_operand *operand,
 		struct mcb_amd64_ctx *ctx)
 {
-	assert(s && prepare && dst && operand);
+	assert(s && blk && dst && operand);
 	if (operand->val == NULL)
 		return NREG;
 
 	switch (operand->val->kind) {
 	case MCB_IMM_VAL:
-		return build_imm_src(s, prepare, dst, operand, ctx);
+		return build_imm_src(s, blk, dst, operand, ctx);
 	case MCB_REG_VAL:
 		*s = mcb_amd64_str_val(operand->val, operand->typ);
 		break;
@@ -310,6 +328,27 @@ format_operand(const char **_c, struct str *s, char *op)
 	*_c = c;
 }
 
+char *
+get_dst(struct mcb_amd64_ctx *ctx, struct mcb_inst *inst,
+		const struct mcb_inst *orig_inst,
+		const struct amd64_inst_variant *variant)
+{
+	assert(ctx && inst);
+
+	if (inst->dst->kind == MCB_REG_VAL && inst->dst->inner.reg != -1)
+		goto str_val;
+
+	if (inst->arg[0]->kind == MCB_REG_VAL && inst->arg[0]->last_user == orig_inst)
+		inst->dst->inner.reg = inst->arg[0]->inner.reg;
+	else
+		inst->dst->inner.reg = mcb_alloc_reg(variant->dst_reg[0], NREG,
+				reg_alloc_area,
+				inst->dst, ctx->cur_blk);
+
+str_val:
+	return mcb_amd64_str_val(inst->dst, inst->typ[2]);
+}
+
 unsigned int
 get_operand_flag(bool allow_imm, mcb_typ typ, enum MCB_VAL_KIND val_kind)
 {
@@ -362,6 +401,7 @@ get_variant(const struct amd64_inst *inst_def, const struct mcb_inst *inst)
 			return variant;
 	}
 
+	eabort("instruction variant not found");
 	return NULL;
 }
 
@@ -370,21 +410,26 @@ get_variant_match(
 		struct amd64_inst_variant *match,
 		const struct mcb_inst *inst)
 {
-	mcb_typ src0_typ;
+	mcb_typ src_typ;
 
 	if (inst->arg[0]) {
-		src0_typ = inst->typ[0];
+		src_typ = inst->typ[0];
 		if (inst->arg[0]->kind == MCB_IMM_VAL)
-			src0_typ = mcb_get_typ_of_imm(inst->arg[0]->inner.imm);
+			src_typ = mcb_get_typ_of_imm(inst->arg[0]->inner.imm);
 		match->src0 = get_operand_flag(true,
-				src0_typ,
+				src_typ,
 				inst->arg[0]->kind);
 	}
 
-	if (inst->arg[1])
-		match->src1 = get_operand_flag(false,
-				inst->typ[1],
+	if (inst->arg[1]) {
+		src_typ = inst->typ[1];
+		if (inst->arg[1]->kind == MCB_IMM_VAL)
+			src_typ = mcb_get_typ_of_imm(inst->arg[1]->inner.imm);
+		match->src1 = get_operand_flag(true,
+				src_typ,
 				inst->arg[1]->kind);
+	}
+
 	if (inst->dst)
 		match->dst = get_operand_flag(false,
 				inst->typ[2],
@@ -397,13 +442,58 @@ match_variant(
 		const struct amd64_inst_variant *match,
 		const struct mcb_inst *inst)
 {
-	if (inst->arg[0] && !(match->src0 & variant->src0))
+	bool src0_matched = match_variant_operand(
+				match->src0,
+				variant->src0,
+				inst->arg[0]);
+	bool src1_matched = match_variant_operand(
+				match->src1,
+				variant->src1,
+				inst->arg[1]);
+
+	if (src0_matched && !src1_matched) {
+		if (variant->src0_reg[0] == USE_DST_SET)
+			src0_matched = false;
+	}
+
+	if (src1_matched && !src0_matched) {
+		if (variant->src1_reg[0] == USE_DST_SET)
+			src1_matched = false;
+	}
+
+	if (!(src0_matched || src1_matched))
 		return false;
-	if (inst->arg[1] && !(match->src1 & variant->src1))
+
+	if (inst->dst && (match->dst & variant->dst))
+		return true;
+
+	return false;
+}
+
+bool
+match_variant_operand(
+		unsigned int bit,
+		unsigned int expect,
+		const struct mcb_val *val)
+{
+	if (!val)
 		return false;
-	if (inst->dst && !(match->dst & variant->dst))
-		return false;
-	return true;
+	if (bit & expect)
+		return true;
+	return false;
+}
+
+void
+try_swap_operand(struct mcb_inst *inst)
+{
+	struct mcb_val *tmp;
+	assert(inst);
+	if (inst->arg[0]->kind == MCB_IMM_VAL
+			&& inst->arg[1]->kind != MCB_IMM_VAL) {
+		tmp = inst->arg[0];
+		inst->arg[0] = inst->arg[1];
+		inst->arg[1] = tmp;
+	}
 }
 
 int

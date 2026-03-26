@@ -25,7 +25,7 @@ static FILE *in, *out;
 #define X "%d,%d,%d,%d"
 static const char *inst_variants_template[] = {
 	"static const struct amd64_inst_variant amd64_%s_variants[] = {\n",
-	"{XS0("X", "X", "X"), XS1("X", "X"), XD("X", "X"), "
+	"{XS("X", "X", "X"), XS("X", "X", "X"), XD("X", "X"), "
 		"{%s,%s}, {%s,%s}, {%s,%s}},\n",
 	"END};\n"
 };
@@ -166,7 +166,7 @@ parse_operand_no_imm(struct amd64_inst_variant *variant, const char **_c)
 {
 	unsigned int flag = parse_operand(variant, _c);
 	if (flag & IMM_BIT) {
-		fprintf(stderr, "imm in dst\n");
+		fprintf(stderr, "no imm\n");
 		exit(1);
 	}
 	return flag;
@@ -231,7 +231,7 @@ parse_variant()
 			parse_operand(&variant, &c);
 			goto end;
 		case '1':
-			parse_operand_no_imm(&variant, &c);
+			parse_operand(&variant, &c);
 			goto end;
 		case '=':
 			parse_operand_no_imm(&variant, &c);
@@ -258,7 +258,8 @@ parse_variant()
 	fprintf(out, inst_variants_template[1],
 			X(variant.src0, 8), X(variant.src0, 4),
 			X(variant.src0, 0),
-			X(variant.src1, 4), X(variant.src1, 0),
+			X(variant.src1, 8), X(variant.src1, 4),
+			X(variant.src1, 0),
 			X(variant.dst,  4), X(variant.dst,  0),
 			reg_str[variant.src0_reg[0]][1],
 			reg_str[variant.src0_reg[1]][1],

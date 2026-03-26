@@ -9,6 +9,8 @@ struct mcb_val;
 
 enum MCB_INST_OP {
 	MCBO_add,
+	MCBO_sdiv,
+	MCBO_udiv,
 	MCBO_smul,
 	MCBO_umul,
 	MCBO_str

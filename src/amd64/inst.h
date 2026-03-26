@@ -37,7 +37,7 @@ enum {
 #define AMD64_INST_VARIANT_END {0,0,0,{NREG,NREG},{NREG,NREG},{NREG,NREG}}
 #define is_end_variant(V) ((V).src0 == 0 && (V).src1 == 0 && (V).dst == 0)
 struct amd64_inst_variant {
-	unsigned int src0:12, src1:8, dst:8;
+	unsigned int src0:12, src1:12, dst:8;
 	enum REG src0_reg[2];
 	enum REG src1_reg[2];
 	enum REG dst_reg[2];

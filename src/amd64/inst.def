@@ -1,8 +1,16 @@
-[+add%s %0, %=]
-%0:bwlq.r,  %1[=], %=:bwlq.rm
-%0:bwlq.rm, %1[=], %=:bwlq.r
-%0:bwl.i,   %1[=], %=:bwl.rm
-%0:l.i,     %1[=], %=:q.r
+[+add%s %1, %=]
+%0[=], %1:bwlq.r,  %=:bwlq.rm
+%0[=], %1:bwlq.rm, %=:bwlq.r
+%0[=], %1:bwl.i,   %=:bwl.rm
+%0[=], %1:l.i,     %=:q.r
+
+; sdiv
+[idiv%s %1]
+%0[=], %1:bwlq.rm, %=[rax+rdx]
+
+; udiv
+[div%s %1]
+%0[=], %1:bwlq.rm, %=[rax+rdx]
 
 ; smul
 [+imul%s %0, %1, %=]
@@ -10,7 +18,7 @@
 %0:w.i, %1:w.rm,     %=:w.r
 %0:l.i, %1:lq.rm,    %=:lq.r
 %0[=],  %1:wlq.rm,   %=:wlq.r
-%0[=],  %1:bwlq.rm,  %=:[rax+rdx]
+%0[=],  %1:bwlq.rm,  %=[rax+rdx]
 
 ; umul
 [+mul%s %1]

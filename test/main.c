@@ -18,10 +18,17 @@ int main() {
 	struct mcb_val *v0 = mcb_def_imm(main_fn, 1);
 	struct mcb_val *v1 = mcb_def_imm(main_fn, 2);
 	struct mcb_val *r0 = mcb_def_val(main_fn);
-	mcb_inst(begin, MCBO_umul,
+	mcb_inst(begin, MCBO_add,
 			MCB_I32, v0,
 			MCB_I32, v1,
 			MCB_I32, r0);
+
+	struct mcb_val *v2 = mcb_def_imm(main_fn, 3);
+	struct mcb_val *r1 = mcb_def_val(main_fn);
+	mcb_inst(begin, MCBO_add,
+			MCB_I32, v2,
+			MCB_I32, r0,
+			MCB_I32, r1);
 
 	struct mcb_amd64_ctx *amd64_ctx = mcb_amd64_build(ctx);
 	mcb_amd64_output(stdout, amd64_ctx);
